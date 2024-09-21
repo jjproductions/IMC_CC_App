@@ -1,0 +1,22 @@
+[
+  {
+    "Card": 6996,
+    "Transaction Date": "7/12/2024",
+    "Post Date": "7/14/2024",
+    "Description": "LA CASA DEL PAN",
+    "Category": "Food & Drink",
+    "Type": "Sale",
+    "Amount": -83.52,
+    "Memo": ""
+  },
+  {
+    "Card": 1,
+    "Transaction Date": "8/12/2024",
+    "Post Date": "7/14/2024",
+    "Description": "LA CASA DEL PAN",
+    "Category": "Food & Drink",
+    "Type": "Sale",
+    "Amount": -83.52,
+    "Memo": ""
+  }
+]
