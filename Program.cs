@@ -1,5 +1,6 @@
 using IMC_CC_App.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Npgsql;
 using System;
 using Serilog;
@@ -7,6 +8,8 @@ using IMC_CC_App.Interfaces;
 using IMC_CC_App.Components;
 using IMC_CC_App.Routes;
 using IMC_CC_App.Repositories;
+using Asp.Versioning;
+using IMC_CC_App.Security;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,21 +17,62 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(x =>
+{
+    x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the bearer scheme",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey
+    });
+});
+////
 
+//Postgres & DBContext
 builder.Services.AddDbContext<DbContext_CC>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresDB")));
+////
 
+//Serilog
 builder.Host.UseSerilog((context, configuration)
     => configuration.ReadFrom.Configuration(context.Configuration));
+////
 
+//API Versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new(1);
+    options.ReportApiVersions = true;
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'V";
+    options.SubstituteApiVersionInUrl = true;
+});
+////
+
+//Setting up APIs
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 
 builder.Services.AddScoped<RouterBase, StatementsAPI>();
 
 builder.Services.AddScoped<RouterBase, ExpenseAPI>();
+////
 
-
+//CORS setup
+var MyAllowedSpecificOrigins = builder.Configuration.GetSection("AllowedOrigins");
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowedOrigins",
+        policy =>
+        {
+            policy.WithOrigins(MyAllowedSpecificOrigins.Value).AllowAnyHeader();
+        }
+        );
+});
+////
 
 
 
@@ -42,7 +86,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
 app.UseHttpsRedirection();
+app.UseSerilogRequestLogging();
+
+app.UseMiddleware<AuthorizationMW>();
 
 
 

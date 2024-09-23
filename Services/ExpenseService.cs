@@ -21,12 +21,12 @@ namespace IMC_CC_App.Services
             _logger = logger;
         }
 
-        public Task<ExpenseDTO> GetExpenses(int id = 0)
+        public Task<ExpenseDTO> GetExpensesAsync(int id = 0)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<CommonDTO> PostExpense(List<ExpenseRequest> request)
+        public async Task<CommonDTO> PostExpenseAsync(List<ExpenseRequest> request)
         {
             Transaction tranItem = null;
             CommonDTO response = new();

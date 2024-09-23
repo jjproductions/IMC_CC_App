@@ -23,4 +23,17 @@ namespace IMC_CC_App.DTO
         public int? Card { get; set; }
         public Boolean Active { get; set; }
     }
+
+    public class AuthorizedUsers
+    {
+        public required string userName { get; set; }
+
+        public required string emailAddress { get; set; }
+
+        public required bool active { get; set; }
+
+        public required string role { get; set; }
+
+        public required int roleId { get; set; }
+    }
 }

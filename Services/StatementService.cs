@@ -17,12 +17,12 @@ namespace IMC_CC_App.Services
             _logger = logger;
         }
 
-        public async Task<ExpenseDTO> GetStatements(StatementRequest request, CancellationToken cancellationToken)
+        public async Task<ExpenseDTO> GetStatementsAsync(StatementRequest request, CancellationToken cancellationToken)
         {
             ExpenseDTO response = new ExpenseDTO();
             Expense transact = null;
             CreditCardDTO CardInfo = new();
-            var query = (
+            var query = (  //TODO: rework to use context
                 from t in _context.Transactions
                 join c in _context.CreditCards on t.CardId equals c.Id
                 join ct in _context.Categories on t.CategoryId equals ct.Id
@@ -55,7 +55,7 @@ namespace IMC_CC_App.Services
             return response;
         }
 
-        public Task<ExpenseDTO> UploadStatements(string statement, CancellationToken cancellationToken)
+        public Task<ExpenseDTO> UploadStatementsAsync(string statement, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

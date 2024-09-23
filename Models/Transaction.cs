@@ -21,7 +21,7 @@ namespace IMC_CC_App.Models
         [Required]
         public string Description { get; set; }
 
-        public int? CardId { get; set; }
+        public int CardId { get; set; }
 
         [Required]
         public int CategoryId { get; set; }

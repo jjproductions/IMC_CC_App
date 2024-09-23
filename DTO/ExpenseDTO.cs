@@ -18,7 +18,8 @@ namespace IMC_CC_App.DTO
         public List<Expense> Expenses { get; set; }
     }
 
-
+    
+    //Used for displaying activity transactions - Staff
     public class Expense
     {
         public Expense()
@@ -38,7 +39,7 @@ namespace IMC_CC_App.DTO
         
         public required string Description { get; set; }
 
-        public int? CardNumber { get; set; }
+        public int CardNumber { get; set; }
 
         public required string Category { get; set; }
 
@@ -55,6 +56,7 @@ namespace IMC_CC_App.DTO
 
     }
 
+    //Used for uploading bank statements - Finance
     public class ExpenseRequest
     {
         public int CardNumber { get; set; }
@@ -74,7 +76,7 @@ namespace IMC_CC_App.DTO
         public string? Memo { get; set; }
     }
 
-
+    //Used for requesting transaction activity - Staff
     public class StatementRequest
     {
         public int NumOfStatements { get; set; } = -1;

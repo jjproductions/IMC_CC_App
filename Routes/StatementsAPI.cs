@@ -2,6 +2,9 @@
 using IMC_CC_App.Interfaces;
 using IMC_CC_App.DTO;
 using IMC_CC_App.Models;
+using Asp.Versioning.Builder;
+using Microsoft.AspNetCore.Mvc;
+using IMC_CC_App.Security;
 
 namespace IMC_CC_App.Routes
 {
@@ -12,13 +15,22 @@ namespace IMC_CC_App.Routes
         public StatementsAPI(IRepositoryManager repositoryManager)
         {
             _repositoryManager = repositoryManager;
-            UrlFragment = "statements";
+            
         }
 
         public override void AddRoutes(WebApplication app)
         {
-            app.MapGet($"/{UrlFragment}", () => Get());
-            //app.MapPost($"/{UrlFragment}", () => Post());
+            ApiVersionSet apiVersionSet = app.NewApiVersionSet()
+                .HasApiVersion(new Asp.Versioning.ApiVersion(1))
+                .ReportApiVersions()
+                .Build();
+
+            RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/statements").WithApiVersionSet(apiVersionSet);
+
+            groupBuilder.MapGet("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hApiKey,
+                [FromHeader(Name = AuthConfig.ApiKeyHeaderName)] string hAppKey) => Get())
+                .RequireCors("AllowedOrigins");
+            
         }
 
 
@@ -27,7 +39,7 @@ namespace IMC_CC_App.Routes
         {
             StatementRequest request = new();
             CancellationToken cancellationToken = CancellationToken.None;
-            ExpenseDTO db_result = await _repositoryManager.statementService.GetStatements(request,cancellationToken);
+            ExpenseDTO db_result = await _repositoryManager.statementService.GetStatementsAsync(request,cancellationToken);
 
             return db_result;
         }

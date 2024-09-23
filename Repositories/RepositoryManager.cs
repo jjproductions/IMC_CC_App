@@ -12,11 +12,23 @@ namespace IMC_CC_App.Repositories
         private IExpense _expenseService;
         private IStatement _statementService;
         private IUser _userService;
+        private IPermission _permissionService;
 
         public RepositoryManager(DbContext_CC context, ILogger logger)
         {
             _context = context;
             _logger = logger;
+        }
+
+
+        public IPermission permissionService
+        {
+            get
+            {
+                if (_permissionService == null)
+                    _permissionService = new PermissionService(_context, _logger);
+                return _permissionService;
+            }
         }
 
         public IStatement statementService

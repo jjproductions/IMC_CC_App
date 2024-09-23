@@ -41,10 +41,12 @@ namespace IMC_CC_App.Data
                     {
                         results.Add(type.Id, type.Name);
                     }
+                    TypeInfo = results;
                 }
+               
                 return results;
             }
-            else { return null; }
+            else { return TypeInfo; }
         }
 
         private static async Task<Dictionary<int, string>> GetCategoryInfo(DbContext_CC _context)
@@ -60,10 +62,12 @@ namespace IMC_CC_App.Data
                     {
                         results.Add(category.Id, category.Name);
                     }
+                    CategoryInfo = results;
                 }
+                
                 return results;
             }
-            else { return null; }
+            else { return CategoryInfo; }
         }
 
         private static async Task<Dictionary<int, int>> GetCardInfo(DbContext_CC _context)
@@ -79,10 +83,12 @@ namespace IMC_CC_App.Data
                     {
                         results.Add(card.Id, card.CardNumber);
                     }
+                    CardInfo = results;
                 }
+                
                 return results;
             }
-            else { return null; }
+            else { return CardInfo; }
         }
     }
 
