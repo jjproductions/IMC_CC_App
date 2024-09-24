@@ -21,31 +21,41 @@ namespace IMC_CC_App.Data
         {
             // Configure AuthorizedUsersDB to have no key
             modelBuilder.Entity<AuthorizedUsersDB>().HasNoKey();
+            modelBuilder.Entity<StatmentsDB>().HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }
 
         //Function Models
         public DbSet<AuthorizedUsersDB> AuthUsers => Set<AuthorizedUsersDB>();
+        public DbSet<StatmentsDB> Statments => Set<StatmentsDB>();
 
 
 
         // Method to call the PostgreSQL function
-        public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string email, bool getAllUsers=false)
+        public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string email, bool getAllUsers = false)
         {
-
             if (getAllUsers)
-            {//Return user info for all users
+                //Return user info for all users
                 return await AuthUsers
                 .FromSqlRaw("SELECT * FROM get_all_authusers()")
                 .ToListAsync();
-            }
-            else
-            {//Return single user info
-                return await AuthUsers
-                .FromSqlRaw("SELECT * FROM authuser('" + email + "')")
-                .ToListAsync();
-            }   
+
+            //Return single user info
+            return await AuthUsers
+            .FromSqlRaw("SELECT * FROM authuser('" + email + "')")
+            .ToListAsync();
+        }
+
+        public async Task<List<StatmentsDB>> GetStatements(string email, bool getAllStatements = false)
+        {
+            if (getAllStatements)  //Return all statements
+                return await Statments
+                    .FromSqlRaw("SELECT * FROM get_all_statements()").ToListAsync();
+
+            //Return statements only for a user
+            return await Statments
+                .FromSqlRaw("SELECT * FROM get_user_statements('" + email + "')").ToListAsync();
         }
     }
 }

@@ -84,6 +84,10 @@ namespace IMC_CC_App.DTO
         public int? Limit { get; set; }
 
         public int StatementID { get; set; }
+
+        public string? Email { get; set; }
     }
+
+    
 
 }

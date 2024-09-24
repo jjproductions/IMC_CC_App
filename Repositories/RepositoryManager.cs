@@ -36,7 +36,7 @@ namespace IMC_CC_App.Repositories
             get
             {
                 if ( _statementService == null )
-                    _statementService = new StatementService( _context, _logger);
+                    _statementService = new StatementService( _context, _logger, _permissionService);
                 return _statementService;
             }
         }
