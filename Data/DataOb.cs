@@ -11,10 +11,36 @@ namespace IMC_CC_App.Data
     public class DataOb
     {
         
-        private static Dictionary<int, int> CardInfo { get; set; }
-        private static Dictionary<int, string> CategoryInfo { get; set; }
-        private static Dictionary<int, string> TypeInfo { get; set; }
+        private static Dictionary<int, int>? CardInfo { get; set; }
+        private static Dictionary<int, string>? CategoryInfo { get; set; }
+        private static Dictionary<int, string>? TypeInfo { get; set; }
+        private static Dictionary<int, UserCollection>? UserInfo { get; set; }
 
+
+        public static async Task<Dictionary<int,UserCollection>> GetUserInfo(DbContext_CC _context)
+        {
+            if (UserInfo == null)
+            {
+                Dictionary<int, UserCollection> results = [];
+                UserCollection user = new();
+
+                var response = await _context.Set<Models.Users>().ToListAsync().ConfigureAwait(false);
+
+                if (response.Any())
+                {
+                    foreach (var type in response)
+                    {
+                        user.Name = type.Name;
+                        user.Email = type.Email;
+                        results.Add(type.Id, user);
+                    }
+                    UserInfo = results;
+                }
+
+                return results;
+            }
+            else { return UserInfo; }
+        }
 
         public static async Task<ConsolidatedInfo> GetConsolidatedInfo(DbContext_CC _context)
         {
@@ -92,14 +118,19 @@ namespace IMC_CC_App.Data
         }
     }
 
-
+    public class UserCollection
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+    }
 
     public class ConsolidatedInfo
     {
         public Dictionary<int, string> category { get; set; }
         public Dictionary<int, string> type { get; set; }
-
         public Dictionary <int, int> creditCard { get; set; }
+        public Dictionary<int, string> user { get; set; }
 
     }
 }

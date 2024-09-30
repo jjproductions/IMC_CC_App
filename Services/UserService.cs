@@ -1,6 +1,7 @@
 ﻿using IMC_CC_App.Data;
 using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
+using IMC_CC_App.Models;
 using ILogger = Serilog.ILogger;
 
 namespace IMC_CC_App.Services
@@ -21,9 +22,32 @@ namespace IMC_CC_App.Services
             throw new NotImplementedException();
         }
 
-        public Task<UserDTO> GetUserAsync(int id = 0)
+        public async Task<UserDTO> GetUserAsync(string? email = null)
         {
-            throw new NotImplementedException();
+            UserDTO response = new();
+            User? tempUser = null;
+            List<AuthorizedUsersDB> results = await _context.GetAuthUserInfo(email);
+
+            results = email != null ?
+                await _context.GetAuthUserInfo(email).ConfigureAwait(false) :
+                await _context.GetAuthUserInfo(email, true).ConfigureAwait(false);
+
+            foreach (AuthorizedUsersDB user in results)
+            {
+                tempUser = new User
+                {
+                    Active = user.active,
+                    Email = user.email,
+                    Name = user.name
+                };
+
+                response.Users.Add(tempUser);
+            }
+
+            response.Status.StatusCode = 200;
+            response.Status.Count = response.Users.Count;
+
+            return response;
         }
     }
 }

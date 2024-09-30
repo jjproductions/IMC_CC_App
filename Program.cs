@@ -57,8 +57,8 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 
 builder.Services.AddScoped<RouterBase, StatementsAPI>();
-
 builder.Services.AddScoped<RouterBase, ExpenseAPI>();
+builder.Services.AddScoped<RouterBase, UserAPI>();
 ////
 
 //CORS setup

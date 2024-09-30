@@ -29,25 +29,28 @@ namespace IMC_CC_App.Data
         //Function Models
         public DbSet<AuthorizedUsersDB> AuthUsers => Set<AuthorizedUsersDB>();
         public DbSet<StatmentsDB> Statments => Set<StatmentsDB>();
+        
 
 
 
         // Method to call the PostgreSQL function
-        public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string email, bool getAllUsers = false)
+        public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string? email=null, bool getAllUsers = false)
         {
             if (getAllUsers)
                 //Return user info for all users
                 return await AuthUsers
                 .FromSqlRaw("SELECT * FROM get_all_authusers()")
                 .ToListAsync();
+            else if (email != null)
+                //Return single user info
+                return await AuthUsers
+                .FromSqlRaw("SELECT * FROM authuser('" + email + "')")
+                .ToListAsync();
 
-            //Return single user info
-            return await AuthUsers
-            .FromSqlRaw("SELECT * FROM authuser('" + email + "')")
-            .ToListAsync();
+            return new List<AuthorizedUsersDB> ();
         }
 
-        public async Task<List<StatmentsDB>> GetStatements(string email, bool getAllStatements = false)
+        public async Task<List<StatmentsDB>> GetStatements(string? email=null, bool getAllStatements = false)
         {
             if (getAllStatements)  //Return all statements
                 return await Statments
@@ -57,5 +60,6 @@ namespace IMC_CC_App.Data
             return await Statments
                 .FromSqlRaw("SELECT * FROM get_user_statements('" + email + "')").ToListAsync();
         }
+
     }
 }

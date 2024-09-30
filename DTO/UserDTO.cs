@@ -8,6 +8,7 @@ namespace IMC_CC_App.DTO
         public UserDTO()
         {
             Status = new();
+            Users = new();
         }
 
         public CommonDTO Status { get; set; }
