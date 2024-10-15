@@ -72,10 +72,6 @@ builder.Services.AddCors(options =>
         }
         );
 });
-////
-
-
-
 
 var app = builder.Build();
 
@@ -86,7 +82,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors();
+app.UseCors("AllowedOrigins");
 app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
 

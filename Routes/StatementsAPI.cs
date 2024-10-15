@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using IMC_CC_App.Security;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Cors;
 
 namespace IMC_CC_App.Routes
 {
@@ -36,8 +37,7 @@ namespace IMC_CC_App.Routes
             groupBuilder.MapGet("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
                 [FromHeader(Name = AuthConfig.ApiKeyHeaderName)] string hApiKey,
                 [FromQuery(Name = "id")] int? id) => Get(hAppKey,id))
-                .RequireCors("AllowedOrigins");
-            
+                .RequireCors("AllowedOrigins"); 
         }
 
 
