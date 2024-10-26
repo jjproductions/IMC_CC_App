@@ -1,8 +1,6 @@
 using IMC_CC_App.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Npgsql;
-using System;
 using Serilog;
 using IMC_CC_App.Interfaces;
 using IMC_CC_App.Components;

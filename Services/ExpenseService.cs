@@ -31,10 +31,16 @@ namespace IMC_CC_App.Services
             Transaction tranItem = null;
             CommonDTO response = new();
             ConsolidatedInfo consolidatedInfo = await DataOb.GetConsolidatedInfo(_context);
-
+            //_logger.Warning("ExpenseService");
+            Dictionary<int, string> errorCollection = new Dictionary<int, string>();
+            string errormsg = "";
+            int count = 1;
             
+            //_logger.Warning("start loop");
             foreach (var item in request)
             {
+
+                errormsg = "";
                 tranItem = new()
                 {
                     Amount = item.Amount,
@@ -46,23 +52,39 @@ namespace IMC_CC_App.Services
 
 
                 if (consolidatedInfo.creditCard.ContainsValue(item.CardNumber))
-                {
                     tranItem.CardId = consolidatedInfo.creditCard.First(t => t.Value == item.CardNumber).Key;
-                }
+                else
+                    errormsg = errormsg + " - card number: " + item.CardNumber;
 
                 if (consolidatedInfo.type.ContainsValue(item.Type))
                 {
                     tranItem.TypeId = consolidatedInfo.type.First(t=>t.Value == item.Type).Key; 
                 }
+                else
+                    errormsg = errormsg + " - type: " + item.Type;
 
                 if (consolidatedInfo.category.ContainsValue(item.Category))
                 {
                     tranItem.CategoryId = consolidatedInfo.category.First(t => t.Value == item.Category).Key;
                 }
+                else
+                    errormsg = errormsg + " - category: " + item.Category;
 
-                await _context.Set<Transaction>().AddAsync(tranItem);
+                if (string.IsNullOrEmpty(errormsg))
+                {
+                    await _context.Set<Transaction>().AddAsync(tranItem);
+                    _logger.Warning(tranItem.ToString());
+                }
+                else 
+                {
+                    errorCollection.Add(count, errormsg);
+                    _logger.Warning("Incorrect values for item: " + count + ". " + errormsg);
+                    break;
+                }
+                count++;
             }
             
+            //_logger.Warning("finish loop");
             await _context.SaveChangesAsync();
             response = (request.Count > 0) ?
                 Utility.SetStatus(request.Count, 200, "Success") :

@@ -3,6 +3,7 @@ using IMC_CC_App.Components;
 using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using IMC_CC_App.Security;
 
 namespace IMC_CC_App.Routes
 {
@@ -25,7 +26,8 @@ namespace IMC_CC_App.Routes
 
             RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/expenses").WithApiVersionSet(apiVersionSet);
 
-            groupBuilder.MapPost("/", ([FromBody] List<ExpenseRequest> request) => Post(request))
+            groupBuilder.MapPost("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
+                [FromHeader(Name = AuthConfig.ApiKeyHeaderName)] string hApiKey,[FromBody] List<ExpenseRequest> request) => Post(request))
                 .RequireCors("AllowedOrigins");
         }
 

@@ -4,16 +4,19 @@ using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
 using IMC_CC_App.Security;
 using Microsoft.AspNetCore.Mvc;
+using ILogger = Serilog.ILogger;
 
 namespace IMC_CC_App.Routes
 {
     public class UserAPI : RouterBase
     {
         private readonly IRepositoryManager _repositoryManager;
+        private readonly ILogger _logger;
 
-        public UserAPI(IRepositoryManager repositoryManager)
+        public UserAPI(IRepositoryManager repositoryManager, ILogger logger)
         {
             _repositoryManager = repositoryManager;
+            _logger = logger;
         }
 
         public override void AddRoutes(WebApplication app)
@@ -42,9 +45,9 @@ namespace IMC_CC_App.Routes
                 return await _repositoryManager.userService.GetUserAsync();
         }
 
-        private object Post(List<ExpenseRequest> request)
+        private void Post(List<ExpenseRequest> request)
         {
-            throw new NotImplementedException();
+            _logger.Warning("Received Expense Post");
         }
     }
 }

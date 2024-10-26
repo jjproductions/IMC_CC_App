@@ -1,0 +1,27 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+version: '3.4'
+
+services:
+  imcccapp:
+    image: imcccapp
+    container_name: imcccapp-container
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080
+
+  imc.database:
+    image: postgres:latest
+    container_name: imc-pgsl
+    environment:
+      - POSTGRES_DB=imcdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/database
+
+
+volumes:
+  - pgdata
