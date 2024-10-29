@@ -22,6 +22,7 @@ namespace IMC_CC_App.Data
             // Configure AuthorizedUsersDB to have no key
             modelBuilder.Entity<AuthorizedUsersDB>().HasNoKey();
             modelBuilder.Entity<StatmentsDB>().HasNoKey();
+            modelBuilder.Entity<UserDataDB>().HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -29,6 +30,7 @@ namespace IMC_CC_App.Data
         //Function Models
         public DbSet<AuthorizedUsersDB> AuthUsers => Set<AuthorizedUsersDB>();
         public DbSet<StatmentsDB> Statments => Set<StatmentsDB>();
+        public DbSet<UserDataDB> UserDataDB => Set<UserDataDB>();
         
 
 
@@ -50,7 +52,24 @@ namespace IMC_CC_App.Data
             return new List<AuthorizedUsersDB> ();
         }
 
-        public async Task<List<StatmentsDB>> GetStatements(string? email=null, bool getAllStatements = false)
+    public async Task<List<UserDataDB>> GetUserInfo()
+    {
+        return await UserDataDB
+        .FromSqlRaw("SELECT * FROM get_all_users()")
+        .ToListAsync();
+    }
+
+        public async Task<List<StatmentsDB>> GetStatements(string? email=null)
+        {
+            //Return statements only for a user
+            return await Statments
+                .FromSqlRaw("SELECT * FROM get_user_statements('" + email + "')").ToListAsync();
+        }
+
+        // Admin use cases - 
+        // Statements by User ID
+        // Get all statements
+        public async Task<List<StatmentsDB>> GetStatements(int? id=null, bool getAllStatements = false)
         {
             if (getAllStatements)  //Return all statements
                 return await Statments
@@ -58,7 +77,7 @@ namespace IMC_CC_App.Data
 
             //Return statements only for a user
             return await Statments
-                .FromSqlRaw("SELECT * FROM get_user_statements('" + email + "')").ToListAsync();
+                .FromSqlRaw("SELECT * FROM get_user_statements_by_card(" + id + ")").ToListAsync();
         }
 
     }

@@ -26,24 +26,23 @@ namespace IMC_CC_App.Services
         {
             UserDTO response = new();
             User? tempUser = null;
-            List<AuthorizedUsersDB> results = await _context.GetAuthUserInfo(email);
+            List<UserDataDB> results = await _context.GetUserInfo().ConfigureAwait(false);
 
-            results = email != null ?
-                await _context.GetAuthUserInfo(email).ConfigureAwait(false) :
-                await _context.GetAuthUserInfo(email, true).ConfigureAwait(false);
-
-            foreach (AuthorizedUsersDB user in results)
+            foreach (UserDataDB user in results)
             {
                 tempUser = new User
                 {
                     Active = user.active,
                     Email = user.email,
-                    Name = user.name
+                    Name = user.name,
+                    Card = user.card_number,
+                    CardId = user.card_id,
+                    RoleName = user.role_name,
+                    RoleId = user.role_id,
+                    Id = user.id
                 };
-
                 response.Users.Add(tempUser);
             }
-
             response.Status.StatusCode = 200;
             response.Status.Count = response.Users.Count;
 

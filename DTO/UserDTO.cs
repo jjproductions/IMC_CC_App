@@ -22,6 +22,9 @@ namespace IMC_CC_App.DTO
         public required string Name { get; set; }
         public required string Email { get; set; }
         public int? Card { get; set; }
+        public int? CardId { get; set; }
+        public required string RoleName { get; set; }
+        public int? RoleId { get; set; }
         public Boolean Active { get; set; }
     }
 

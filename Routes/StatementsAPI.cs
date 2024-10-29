@@ -36,19 +36,23 @@ namespace IMC_CC_App.Routes
 
             groupBuilder.MapGet("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
                 [FromHeader(Name = AuthConfig.ApiKeyHeaderName)] string hApiKey,
-                [FromQuery(Name = "id")] int? id) => Get(hAppKey,id))
+                [FromQuery(Name = "id")] int? id,
+                [FromQuery(Name = "getall")] bool? getAllStatements) => Get(hAppKey,id,getAllStatements))
                 .RequireCors("AllowedOrigins"); 
         }
 
 
 
-        protected virtual async Task<ExpenseDTO> Get(string email, int? id)
+        protected virtual async Task<ExpenseDTO> Get(string email, int? id, bool? getAllStatements)
         {
             StatementRequest request = new();
             CancellationToken cancellationToken = CancellationToken.None;
-            request.Email = id == null ? email : null;
+            request.getAllStatements = getAllStatements;
+            if (id == null)
+                request.Email = email;
+            else
+                request.CardId = id;
             ExpenseDTO? db_result = await _repositoryManager.statementService.GetStatementsAsync(request, cancellationToken);
-            
             return db_result;
         }
 

@@ -85,6 +85,10 @@ namespace IMC_CC_App.DTO
         public int StatementID { get; set; }
 
         public string? Email { get; set; }
+
+        public int? CardId { get; set; }
+
+        public bool? getAllStatements { get; set; }
     }
 
     

@@ -46,4 +46,23 @@ namespace IMC_CC_App.Models
 
         public required int role_id { get; set; }
     }
+
+    public class UserDataDB
+    {
+        public required string name { get; set; }
+
+        public required string email { get; set; }
+
+        public required bool active { get; set; }
+
+        public required string role_name { get; set; }
+
+        public required int role_id { get; set; }
+
+        public required int card_number {get; set;}
+
+        public required int card_id {get; set;}
+
+        public required int id {get; set; }
+    }
 }

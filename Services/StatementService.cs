@@ -25,9 +25,15 @@ namespace IMC_CC_App.Services
             List<StatmentsDB>? statementsResults = null;
             Expense? expense = null;
 
-            statementsResults = string.IsNullOrEmpty(request.Email)
-                ? await _context.GetStatements(request.Email, true).ConfigureAwait(false)
-                : await _context.GetStatements(request.Email).ConfigureAwait(false);
+            //_logger.Warning("get all statements: " + request.getAllStatements);
+            if (request.getAllStatements != null && request.getAllStatements == true)
+            {
+                statementsResults = await _context.GetStatements(request.CardId, true).ConfigureAwait(false);
+                //_logger.Warning("called by card id");
+            }else
+                statementsResults = string.IsNullOrEmpty(request.Email)
+                    ? await _context.GetStatements(request.CardId).ConfigureAwait(false)
+                    : await _context.GetStatements(request.Email).ConfigureAwait(false);
 
             foreach (var statement in statementsResults)
             {
