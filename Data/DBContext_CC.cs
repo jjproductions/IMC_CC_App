@@ -52,12 +52,18 @@ namespace IMC_CC_App.Data
             return new List<AuthorizedUsersDB> ();
         }
 
-    public async Task<List<UserDataDB>> GetUserInfo()
-    {
-        return await UserDataDB
-        .FromSqlRaw("SELECT * FROM get_all_users()")
-        .ToListAsync();
-    }
+        // Get info from all active users
+        public async Task<List<UserDataDB>> GetUserInfo(string? email=null)
+        {
+            if (email != null)
+                return await UserDataDB
+                .FromSqlRaw("SELECT * FROM get_all_users('"+ email + "')")
+                .ToListAsync();
+            else
+                return await UserDataDB
+                .FromSqlRaw("SELECT * FROM get_all_users()")
+                .ToListAsync();
+        }
 
         public async Task<List<StatmentsDB>> GetStatements(string? email=null)
         {

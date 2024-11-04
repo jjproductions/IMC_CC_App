@@ -29,12 +29,13 @@ namespace IMC_CC_App.Routes
             RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/users").WithApiVersionSet(apiVersionSet);
 
             groupBuilder.MapPost("/", ([FromBody] List<ExpenseRequest> request) => Post(request))
-                .RequireCors("AllowedOrigins");
+                .RequireCors("AllowedOrigins")
+                .RequireAuthorization();
 
             groupBuilder.MapGet("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
-                [FromHeader(Name = AuthConfig.ApiKeyHeaderName)] string hApiKey,
                 [FromQuery(Name = "allusers")] string? allUsers) => Get(hAppKey, allUsers))
                 .RequireCors("AllowedOrigins");
+                // .RequireAuthorization();
         }
 
         protected virtual async Task<UserDTO> Get(string hAppKey, string? allUsers)

@@ -40,4 +40,10 @@ namespace IMC_CC_App.DTO
 
         public required int roleId { get; set; }
     }
+
+    public class Login
+    {
+        public required string email { get; set; }
+        public required string password { get; set; }
+    }
 }

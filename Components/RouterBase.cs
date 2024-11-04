@@ -2,8 +2,8 @@
 {
     public class RouterBase
     {
-        protected ILogger Logger;
-        public string UrlFragment;
+        // protected ILogger Logger;
+        // public string UrlFragment;
         public virtual void AddRoutes(WebApplication app) { }
     }
 }

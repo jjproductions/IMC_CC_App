@@ -27,8 +27,9 @@ namespace IMC_CC_App.Routes
             RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/expenses").WithApiVersionSet(apiVersionSet);
 
             groupBuilder.MapPost("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
-                [FromHeader(Name = AuthConfig.ApiKeyHeaderName)] string hApiKey,[FromBody] List<ExpenseRequest> request) => Post(request))
-                .RequireCors("AllowedOrigins");
+                [FromBody] List<ExpenseRequest> request) => Post(request))
+                .RequireCors("AllowedOrigins")
+                .RequireAuthorization();
         }
 
         protected virtual async Task<IResult> Post(List<ExpenseRequest> request)

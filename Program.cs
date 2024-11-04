@@ -8,9 +8,18 @@ using IMC_CC_App.Routes;
 using IMC_CC_App.Repositories;
 using Asp.Versioning;
 using IMC_CC_App.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.AspNetCore.Authentication;
+using IMC_CC_App.DTO;
+using IMC_CC_App.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -26,6 +35,45 @@ builder.Services.AddSwaggerGen(x =>
     });
 });
 ////
+
+
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(x => 
+    {
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AuthKey").ToString())),
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("User", policy => policy
+        .RequireAuthenticatedUser()
+        .RequireClaim(
+            CustomClaims.Role,
+            allowedValues: [Permission.Edit.ToString(), Permission.Admin.ToString(), Permission.SuperAdmin.ToString()]
+        ));
+
+    options.AddPolicy("Admin", policy => policy
+        .RequireAuthenticatedUser()
+        .RequireClaim(
+            CustomClaims.Role,
+            allowedValues: [Permission.Admin.ToString(), Permission.SuperAdmin.ToString()]
+        ));
+
+    options.AddPolicy("Global Admin", policy => policy
+        .RequireAuthenticatedUser()
+        .RequireClaim(
+            CustomClaims.Role,
+            allowedValues: [Permission.SuperAdmin.ToString()]
+        ));
+    
+});
+
 
 //Postgres & DBContext
 builder.Services.AddDbContext<DbContext_CC>(options =>
@@ -57,7 +105,10 @@ builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 builder.Services.AddScoped<RouterBase, StatementsAPI>();
 builder.Services.AddScoped<RouterBase, ExpenseAPI>();
 builder.Services.AddScoped<RouterBase, UserAPI>();
+builder.Services.AddScoped<RouterBase, SigninAPI>();
 ////
+///
+builder.Services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
 
 //CORS setup
 var MyAllowedSpecificOrigins = builder.Configuration.GetSection("AllowedOrigins");
@@ -83,8 +134,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowedOrigins");
 app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
-
-app.UseMiddleware<AuthorizationMW>();
+app.UseAuthentication();
+app.UseAuthorization();
+//app.UseMiddleware<AuthorizationMW>();
 
 
 

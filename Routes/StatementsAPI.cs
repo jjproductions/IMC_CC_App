@@ -35,10 +35,10 @@ namespace IMC_CC_App.Routes
             //    .RequireCors("AllowedOrigins");
 
             groupBuilder.MapGet("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
-                [FromHeader(Name = AuthConfig.ApiKeyHeaderName)] string hApiKey,
                 [FromQuery(Name = "id")] int? id,
                 [FromQuery(Name = "getall")] bool? getAllStatements) => Get(hAppKey,id,getAllStatements))
-                .RequireCors("AllowedOrigins"); 
+                .RequireCors("AllowedOrigins")
+                .RequireAuthorization(); 
         }
 
 

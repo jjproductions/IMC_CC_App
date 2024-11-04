@@ -16,4 +16,17 @@
             set => _count = value;
         }
     }
+
+    public static class CustomClaims
+    {
+        public const string Role = "Role";
+    }
+
+    public enum Permission
+    {
+        Viewer = 0,
+        Edit = 1,
+        Admin = 2,
+        SuperAdmin = 3
+    }
 }

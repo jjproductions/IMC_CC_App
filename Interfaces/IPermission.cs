@@ -4,6 +4,6 @@ namespace IMC_CC_App.Interfaces
 {
     public interface IPermission
     {
-        Task<List<AuthorizedUsers>> GetAuthorizedUsersAsync(string? id, bool getAllUsers=false);
+        Task<string?> GetPermissions(string? email=null);
     }
 }

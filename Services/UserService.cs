@@ -26,8 +26,10 @@ namespace IMC_CC_App.Services
         {
             UserDTO response = new();
             User? tempUser = null;
-            List<UserDataDB> results = await _context.GetUserInfo().ConfigureAwait(false);
-
+            List<UserDataDB> results = email != null ? 
+                await _context.GetUserInfo(email).ConfigureAwait(false) :
+                await _context.GetUserInfo().ConfigureAwait(false);
+            
             foreach (UserDataDB user in results)
             {
                 tempUser = new User
@@ -41,7 +43,7 @@ namespace IMC_CC_App.Services
                     RoleId = user.role_id,
                     Id = user.id
                 };
-                response.Users.Add(tempUser);
+                response.Users?.Add(tempUser);
             }
             response.Status.StatusCode = 200;
             response.Status.Count = response.Users.Count;
