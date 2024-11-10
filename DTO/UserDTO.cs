@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography.X509Certificates;
-using IMC_CC_App.DTO;
 
 namespace IMC_CC_App.DTO
 {

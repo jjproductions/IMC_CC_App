@@ -35,6 +35,7 @@ namespace IMC_CC_App.Services
             Dictionary<int, string> errorCollection = new Dictionary<int, string>();
             string errormsg = "";
             int count = 1;
+            int count_success = 0;
             
             //_logger.Warning("start loop");
             foreach (var item in request)
@@ -73,6 +74,7 @@ namespace IMC_CC_App.Services
                 if (string.IsNullOrEmpty(errormsg))
                 {
                     await _context.Set<Transaction>().AddAsync(tranItem);
+                    count_success++;
                     _logger.Warning(tranItem.ToString());
                 }
                 else 
@@ -86,8 +88,11 @@ namespace IMC_CC_App.Services
             
             //_logger.Warning("finish loop");
             await _context.SaveChangesAsync();
-            response = (request.Count > 0) ?
-                Utility.SetStatus(request.Count, 200, "Success") :
+            //TODO: produce a better response that indicates 
+            // all entries uploaded
+            // partial success and which entries failed
+            response = (count_success > 0) ?
+                Utility.SetStatus(request.Count, 200, $"{count_success} entries uploaded successfully") :
                 Utility.SetStatus(request.Count, 200, "No data for request");
 
 

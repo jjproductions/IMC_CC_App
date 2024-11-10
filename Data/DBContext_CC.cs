@@ -57,7 +57,7 @@ namespace IMC_CC_App.Data
         {
             if (email != null)
                 return await UserDataDB
-                .FromSqlRaw("SELECT * FROM get_all_users('"+ email + "')")
+                .FromSqlRaw("SELECT * FROM get_user('"+ email + "')")
                 .ToListAsync();
             else
                 return await UserDataDB

@@ -34,8 +34,8 @@ namespace IMC_CC_App.Routes
 
             groupBuilder.MapGet("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
                 [FromQuery(Name = "allusers")] string? allUsers) => Get(hAppKey, allUsers))
-                .RequireCors("AllowedOrigins");
-                // .RequireAuthorization();
+                .RequireCors("AllowedOrigins")
+                .RequireAuthorization();
         }
 
         protected virtual async Task<UserDTO> Get(string hAppKey, string? allUsers)

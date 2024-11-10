@@ -7,10 +7,11 @@ namespace IMC_CC_App.Security
 {
     public static class TokenGenerator
     {
-        public static string GenerateToken(string email)
+        //private readonly IConfiguration _config;
+        public static string GenerateToken(string email, IConfiguration _config)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("5014c26ef532i39e8b648fbf8555f0e7c93e1a7cde9e12192543aa1720947331"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AuthKey").ToString())); //"5014c26ef532i39e8b648fbf8555f0e7c93e1a7cde9e12192543aa1720947331"));
 
             var claims = new List<Claim>
             {

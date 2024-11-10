@@ -14,11 +14,13 @@ namespace IMC_CC_App.Routes
     {
         private readonly IRepositoryManager _repositoryManager;
         private readonly ILogger _logger;
+        private readonly IConfiguration _config;
 
-        public SigninAPI(IRepositoryManager repositoryManager, ILogger logger)
+        public SigninAPI(IRepositoryManager repositoryManager, ILogger logger, IConfiguration config)
         {
             _repositoryManager = repositoryManager;
             _logger = logger;
+            _config = config;
         }
 
         public override void AddRoutes(WebApplication app)
@@ -33,12 +35,13 @@ namespace IMC_CC_App.Routes
             groupBuilder.MapPost("/", ([FromBody] Login request) => Post(request))
                 .RequireCors("AllowedOrigins")
                 .AllowAnonymous();
+
         }
 
         protected virtual rType Post(Login request)
         {
             rType response = new();
-            response.access_token = TokenGenerator.GenerateToken(request.email);
+            response.access_token = TokenGenerator.GenerateToken(request.email, _config);
 
             return response;
             // return (new { Token = response });
