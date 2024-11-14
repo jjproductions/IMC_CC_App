@@ -11,12 +11,11 @@ namespace IMC_CC_App.Services
     {
         private readonly DbContext_CC _context;
         private ILogger _logger;
-        private readonly IPermission _permission;
-        public StatementService(DbContext_CC context, ILogger logger, IPermission permission) 
+        
+        public StatementService(DbContext_CC context, ILogger logger) 
         {
             _context = context;
             _logger = logger;
-            _permission = permission;
         }
 
         public async Task<ExpenseDTO> GetStatementsAsync(StatementRequest request, CancellationToken cancellationToken)

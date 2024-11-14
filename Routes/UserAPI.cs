@@ -2,8 +2,9 @@
 using IMC_CC_App.Components;
 using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
-using IMC_CC_App.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using ILogger = Serilog.ILogger;
 
 namespace IMC_CC_App.Routes
@@ -12,11 +13,13 @@ namespace IMC_CC_App.Routes
     {
         private readonly IRepositoryManager _repositoryManager;
         private readonly ILogger _logger;
+        private readonly IAuthorizationService _authService;
 
-        public UserAPI(IRepositoryManager repositoryManager, ILogger logger)
+        public UserAPI(IRepositoryManager repositoryManager, ILogger logger, IAuthorizationService authService)
         {
             _repositoryManager = repositoryManager;
             _logger = logger;
+            _authService = authService;
         }
 
         public override void AddRoutes(WebApplication app)
@@ -26,22 +29,25 @@ namespace IMC_CC_App.Routes
                .ReportApiVersions()
                .Build();
 
-            RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/users").WithApiVersionSet(apiVersionSet);
+            RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/users")
+                .WithApiVersionSet(apiVersionSet)
+                .RequireCors("AllowedOrigins");
 
             groupBuilder.MapPost("/", ([FromBody] List<ExpenseRequest> request) => Post(request))
-                .RequireCors("AllowedOrigins")
                 .RequireAuthorization();
 
-            groupBuilder.MapGet("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
-                [FromQuery(Name = "allusers")] string? allUsers) => Get(hAppKey, allUsers))
-                .RequireCors("AllowedOrigins")
+            groupBuilder.MapGet("/", (
+                [FromQuery(Name = "allusers")] string? allUsers, ClaimsPrincipal principal) => Get(allUsers,principal))
                 .RequireAuthorization();
         }
 
-        protected virtual async Task<UserDTO> Get(string hAppKey, string? allUsers)
+        protected virtual async Task<UserDTO> Get(string? allUsers, ClaimsPrincipal principal)
         {
+            //Get Role info user info
+            var authResult = await _authService.AuthorizeAsync(principal, "User");
+            _logger.Warning($"Get Users - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
             if (string.IsNullOrEmpty(allUsers))
-                return await _repositoryManager.userService.GetUserAsync(hAppKey);
+                return await _repositoryManager.userService.GetUserAsync(principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value);
             else
                 return await _repositoryManager.userService.GetUserAsync();
         }

@@ -11,11 +11,9 @@ using IMC_CC_App.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Logging;
-using Microsoft.AspNetCore.Authentication;
 using IMC_CC_App.DTO;
-using IMC_CC_App.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,42 +36,49 @@ builder.Services.AddSwaggerGen(x =>
 
 
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(x => 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x => 
     {
         x.TokenValidationParameters = new TokenValidationParameters
         {
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AuthKey").ToString())),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AuthKey").Value.ToString())),
             ValidateIssuerSigningKey = true,
-            ValidateLifetime = true
+            ValidateLifetime = true,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero,
+            ValidateIssuer = false
         };
     });
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("User", policy => policy
-        .RequireAuthenticatedUser()
-        .RequireClaim(
-            CustomClaims.Role,
-            allowedValues: [Permission.Edit.ToString(), Permission.Admin.ToString(), Permission.SuperAdmin.ToString()]
-        ));
+options.AddPolicy("User", policy => policy
+    .RequireAuthenticatedUser()
+    .RequireClaim(
+        ClaimTypes.Role,
+        allowedValues: [Permission.Edit.ToString(), Permission.Admin.ToString(), Permission.SuperAdmin.ToString()]
+    ));
 
     options.AddPolicy("Admin", policy => policy
         .RequireAuthenticatedUser()
         .RequireClaim(
-            CustomClaims.Role,
+            ClaimTypes.Role,
             allowedValues: [Permission.Admin.ToString(), Permission.SuperAdmin.ToString()]
         ));
 
     options.AddPolicy("Global Admin", policy => policy
         .RequireAuthenticatedUser()
         .RequireClaim(
-            CustomClaims.Role,
+            ClaimTypes.Role,
             allowedValues: [Permission.SuperAdmin.ToString()]
         ));
-    
+
 });
 
+//builder.Services.AddTransient<IAuthorizationHandler, PermissionAuthHandler>();
 
 //Postgres & DBContext
 builder.Services.AddDbContext<DbContext_CC>(options =>
@@ -108,7 +113,7 @@ builder.Services.AddScoped<RouterBase, UserAPI>();
 builder.Services.AddScoped<RouterBase, SigninAPI>();
 ////
 ///
-builder.Services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+//builder.Services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
 
 //CORS setup
 var MyAllowedSpecificOrigins = builder.Configuration.GetSection("AllowedOrigins");

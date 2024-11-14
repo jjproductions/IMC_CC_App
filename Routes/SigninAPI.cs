@@ -1,9 +1,9 @@
 using Asp.Versioning.Builder;
+using Azure;
 using IMC_CC_App.Components;
 using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
 using IMC_CC_App.Security;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ILogger = Serilog.ILogger;
 
@@ -38,15 +38,20 @@ namespace IMC_CC_App.Routes
 
         }
 
-        protected virtual rType Post(Login request)
+        protected virtual async Task<rType> Post(Login request)
         {
             rType response = new();
-            response.access_token = TokenGenerator.GenerateToken(request.email, _config);
+            //TODO: Use Redis
+            var userInfo = await _repositoryManager.userService.GetUserAsync(request.email);
+            if (userInfo?.Users.Count == 0)
+                throw new UnauthorizedAccessException("Invalid Credentials");
+            else
+                response.access_token = TokenGenerator.GenerateToken(userInfo.Users?[0], _config.GetSection("AuthKey")?.Value?.ToString());
 
             return response;
             // return (new { Token = response });
             
-                 
+                    
             
         }
 

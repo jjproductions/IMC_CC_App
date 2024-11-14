@@ -5,7 +5,7 @@
         IStatement statementService { get; }
         IExpense expenseService { get; }
         IUser userService { get; }
-        IPermission permissionService { get; }
+        //IPermission permissionService { get; }
 
         void Save();
     }
