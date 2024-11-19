@@ -5,6 +5,7 @@ using IMC_CC_App.Models;
 using System.Globalization;
 using System.Reflection.Metadata.Ecma335;
 using ILogger = Serilog.ILogger;
+using IMC_CC_App.Utility;
 
 namespace IMC_CC_App.Services
 {
@@ -92,8 +93,8 @@ namespace IMC_CC_App.Services
             // all entries uploaded
             // partial success and which entries failed
             response = (count_success > 0) ?
-                Utility.SetStatus(request.Count, 200, $"{count_success} entries uploaded successfully") :
-                Utility.SetStatus(request.Count, 200, "No data for request");
+                Status.SetStatus(request.Count, 200, $"{count_success} entries uploaded successfully") :
+                Status.SetStatus(request.Count, 200, "No data for request");
 
 
             return response;

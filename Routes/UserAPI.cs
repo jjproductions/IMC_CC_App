@@ -6,21 +6,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ILogger = Serilog.ILogger;
+using IMC_CC_App.Utility;
 
 namespace IMC_CC_App.Routes
 {
-    public class UserAPI : RouterBase
+    public class UserAPI(IRepositoryManager repositoryManager, ILogger logger, IAuthorizationService authService) : RouterBase
     {
-        private readonly IRepositoryManager _repositoryManager;
-        private readonly ILogger _logger;
-        private readonly IAuthorizationService _authService;
-
-        public UserAPI(IRepositoryManager repositoryManager, ILogger logger, IAuthorizationService authService)
-        {
-            _repositoryManager = repositoryManager;
-            _logger = logger;
-            _authService = authService;
-        }
+        private readonly IRepositoryManager _repositoryManager = repositoryManager;
+        private readonly ILogger _logger = logger;
+        private readonly IAuthorizationService _authService = authService;
 
         public override void AddRoutes(WebApplication app)
         {
@@ -44,6 +38,9 @@ namespace IMC_CC_App.Routes
         protected virtual async Task<UserDTO> Get(string? allUsers, ClaimsPrincipal principal)
         {
             //Get Role info user info
+            //TODO: if this fails??
+            //var authResult = new ClaimsInfo();
+            
             var authResult = await _authService.AuthorizeAsync(principal, "User");
             _logger.Warning($"Get Users - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
             if (string.IsNullOrEmpty(allUsers))
