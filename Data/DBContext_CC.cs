@@ -1,12 +1,13 @@
 ﻿using IMC_CC_App.DTO;
 using IMC_CC_App.Models;
 using Microsoft.EntityFrameworkCore;
+using ILogger = Serilog.ILogger;
 
 namespace IMC_CC_App.Data
 {
-    public class DbContext_CC : DbContext
+    public class DbContext_CC(DbContextOptions<DbContext_CC> options, ILogger logger) : DbContext(options)
     {
-        public DbContext_CC(DbContextOptions<DbContext_CC> options) : base(options) { }
+        private readonly ILogger _logger = logger;
 
         public DbSet<CreditCard> CreditCards => Set<CreditCard>();
         public DbSet<Models.Type> Types => Set<Models.Type>();
@@ -81,6 +82,7 @@ namespace IMC_CC_App.Data
                 return await Statments
                     .FromSqlRaw("SELECT * FROM get_all_statements()").ToListAsync();
 
+            _logger.Warning($"context GetStatements::id={id}");
             //Return statements only for a user
             return await Statments
                 .FromSqlRaw("SELECT * FROM get_user_statements_by_card(" + id + ")").ToListAsync();
