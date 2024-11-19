@@ -34,17 +34,17 @@ namespace IMC_CC_App.Routes
             //    .RequireCors("AllowedOrigins");
 
             groupBuilder.MapGet("/", ([FromQuery(Name = "id")] int? id,
-                [FromQuery(Name = "getall")] bool? getAllStatements, ClaimsPrincipal principal) => Get(id,getAllStatements, principal))
+                [FromQuery(Name = "getall")] bool? getAllStatements, ClaimsPrincipal principal) => Get(id, principal, getAllStatements ))
                 .RequireCors("AllowedOrigins")
                 .RequireAuthorization(); 
         }
 
 
 
-        protected virtual async Task<ExpenseDTO> Get(int? id, bool? getAllStatements, ClaimsPrincipal principal)
+        protected virtual async Task<ExpenseDTO> Get(int? id, ClaimsPrincipal principal, bool? getAllStatements=false)
         {
             var authResult = await _authService.AuthorizeAsync(principal, "User");
-            _logger.Warning($"Get Users - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
+            _logger.Warning($"Get Users - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded} :: id={id}");
 
             StatementRequest request = new();
             CancellationToken cancellationToken = CancellationToken.None;
