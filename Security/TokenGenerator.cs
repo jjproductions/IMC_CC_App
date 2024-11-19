@@ -10,7 +10,7 @@ namespace IMC_CC_App.Security
     public static class TokenGenerator
     {
         //private readonly IConfiguration _config;
-        public static string GenerateToken(User userInfo, string? secretKey)
+        public static string GenerateToken(User? userInfo, string? secretKey)
         {
             if (secretKey == null) throw new UnauthorizedAccessException("site is down: 101"); 
             

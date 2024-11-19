@@ -46,8 +46,10 @@ namespace IMC_CC_App.Routes
             if (userInfo?.Users.Count == 0)
                 throw new UnauthorizedAccessException("Invalid Credentials");
             else
-                response.access_token = TokenGenerator.GenerateToken(userInfo.Users?[0], _config.GetSection("AuthKey")?.Value?.ToString());
-
+            {
+                response.access_token = TokenGenerator.GenerateToken(userInfo?.Users?[0], _config.GetSection("AuthKey")?.Value?.ToString());
+                response.role = userInfo?.Users?[0].RoleName;
+            }
             return response;
             // return (new { Token = response });
             
@@ -57,7 +59,8 @@ namespace IMC_CC_App.Routes
 
         public class rType
         {
-            public string access_token {get; set;}
+            public string? access_token {get; set;}
+            public string? role {get; set;}
         }
     }
 }
