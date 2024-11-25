@@ -29,16 +29,17 @@ namespace IMC_CC_App.Services
 
         public async Task<CommonDTO> PostExpenseAsync(List<ExpenseRequest> request)
         {
+            _logger.Warning("entering ExpenseService");
             Transaction tranItem = null;
             CommonDTO response = new();
             ConsolidatedInfo consolidatedInfo = await DataOb.GetConsolidatedInfo(_context);
-            //_logger.Warning("ExpenseService");
+            _logger.Warning("ExpenseService");
             Dictionary<int, string> errorCollection = new Dictionary<int, string>();
             string errormsg = "";
             int count = 1;
             int count_success = 0;
             
-            //_logger.Warning("start loop");
+            _logger.Warning("start loop");
             foreach (var item in request)
             {
 

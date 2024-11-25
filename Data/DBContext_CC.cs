@@ -37,20 +37,22 @@ namespace IMC_CC_App.Data
 
 
         // Method to call the PostgreSQL function
-        public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string? email=null, bool getAllUsers = false)
+        public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string? email=null)
         {
-            if (getAllUsers)
-                //Return user info for all users
-                return await AuthUsers
-                .FromSqlRaw("SELECT * FROM get_all_authusers()")
-                .ToListAsync();
-            else if (email != null)
-                //Return single user info
-                return await AuthUsers
-                .FromSqlRaw("SELECT * FROM authuser('" + email + "')")
-                .ToListAsync();
-
-            return new List<AuthorizedUsersDB> ();
+            List<AuthorizedUsersDB>? response = 
+                email == null ? 
+                (
+                    //Return user info for all users
+                    response = await AuthUsers
+                    .FromSqlRaw("SELECT * FROM get_all_authusers()")
+                    .ToListAsync()
+                ) : (
+                    //Return single user info
+                    response = await AuthUsers
+                    .FromSqlRaw("SELECT * FROM authuser('" + email + "')")
+                    .ToListAsync()
+                );
+            return response;
         }
 
         // Get info from all active users

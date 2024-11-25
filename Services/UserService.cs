@@ -17,22 +17,50 @@ namespace IMC_CC_App.Services
             _logger = logger;
         }
 
-        public Task<UserDTO> CreateUserAsync(User userDTO, CancellationToken cancellationToken)
+        public async Task<UserDTO> CreateUserAsync(User userDTO, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<UserDTO> GetAuthUserAsync(string? email = null)
+        {
+            UserDTO response = new();
+            List<AuthorizedUsersDB>? userResponse = email != null ?
+                await _context.GetAuthUserInfo(email).ConfigureAwait(false) :
+                await _context.GetAuthUserInfo().ConfigureAwait(false);
+            
+            foreach (AuthorizedUsersDB user in userResponse)
+            {
+                User? tempUser = new User
+                {
+                    Active = true,
+                    Email = user.email,
+                    Name = user.name,
+                    Card = null,
+                    CardId = null,
+                    RoleName = user.role_name,
+                    RoleId = user.role_id,
+                    Id = user.id
+                };
+                response.Users?.Add(tempUser);
+            }
+            response.Status.StatusCode = 200;
+            response.Status.Count = response.Users.Count;
+
+            return response;
         }
 
         public async Task<UserDTO> GetUserAsync(string? email = null)
         {
             UserDTO response = new();
-            User? tempUser = null;
-            List<UserDataDB> results = email != null ? 
+            
+            List<UserDataDB>? results = email != null ? 
                 await _context.GetUserInfo(email).ConfigureAwait(false) :
                 await _context.GetUserInfo().ConfigureAwait(false);
-            
+
             foreach (UserDataDB user in results)
             {
-                tempUser = new User
+                User? tempUser = new()
                 {
                     Active = user.active,
                     Email = user.email,

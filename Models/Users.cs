@@ -45,6 +45,8 @@ namespace IMC_CC_App.Models
         public required string role_name { get; set; }
 
         public required int role_id { get; set; }
+
+        public required int id {get; set; }
     }
 
     public class UserDataDB

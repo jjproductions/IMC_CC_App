@@ -1,3 +1,4 @@
+using System.Net;
 using Asp.Versioning.Builder;
 using Azure;
 using IMC_CC_App.Components;
@@ -42,18 +43,14 @@ namespace IMC_CC_App.Routes
         {
             rType response = new();
             //TODO: Use Redis
-            var userInfo = await _repositoryManager.userService.GetUserAsync(request.email);
-            if (userInfo?.Users.Count == 0)
-                throw new UnauthorizedAccessException("Invalid Credentials");
-            else
+            var userInfo = await _repositoryManager.userService.GetAuthUserAsync(request.email);
+            HttpResponseMessage msg;
+            if (userInfo?.Users?.Count > 0)
             {
                 response.access_token = TokenGenerator.GenerateToken(userInfo?.Users?[0], _config.GetSection("AuthKey")?.Value?.ToString());
                 response.role = userInfo?.Users?[0].RoleName;
             }
             return response;
-            // return (new { Token = response });
-            
-                    
             
         }
 

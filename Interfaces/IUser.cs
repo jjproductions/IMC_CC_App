@@ -6,6 +6,8 @@ namespace IMC_CC_App.Interfaces
     {
         Task<UserDTO> GetUserAsync(string? email = null);
 
+        Task<UserDTO> GetAuthUserAsync(string? email = null);
+
         Task<UserDTO> CreateUserAsync(User userDTO, CancellationToken cancellationToken);
     }
 }

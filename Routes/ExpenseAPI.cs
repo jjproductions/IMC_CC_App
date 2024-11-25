@@ -4,18 +4,18 @@ using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using IMC_CC_App.Security;
+using ILogger = Serilog.ILogger;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace IMC_CC_App.Routes
 {
-    public class ExpenseAPI : RouterBase
+    public class ExpenseAPI(IRepositoryManager repositoryManager, ILogger logger, IAuthorizationService authService) : RouterBase
     {
-        private readonly IRepositoryManager _repositoryManager;
+        private readonly IRepositoryManager _repositoryManager = repositoryManager;
+        private readonly ILogger _logger = logger;
 
-        public ExpenseAPI(IRepositoryManager repositoryManager)
-        {
-            _repositoryManager = repositoryManager;
-            
-        }
+        private readonly IAuthorizationService _authService = authService;
 
         public override void AddRoutes(WebApplication app)
         {
@@ -26,14 +26,14 @@ namespace IMC_CC_App.Routes
 
             RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/expenses").WithApiVersionSet(apiVersionSet);
 
-            groupBuilder.MapPost("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
-                [FromBody] List<ExpenseRequest> request) => Post(request))
+            groupBuilder.MapPost("/", ([FromBody] List<ExpenseRequest> request, ClaimsPrincipal principal) => Post(request, principal))
                 .RequireCors("AllowedOrigins")
                 .RequireAuthorization();
         }
 
-        protected virtual async Task<IResult> Post(List<ExpenseRequest> request)
+        protected virtual async Task<IResult> Post(List<ExpenseRequest> request, ClaimsPrincipal principal)
         {
+            var authResult = await _authService.AuthorizeAsync(principal, "Admin");
             var response = await _repositoryManager.expenseService.PostExpenseAsync(request);
             return Results.Ok();
         }
