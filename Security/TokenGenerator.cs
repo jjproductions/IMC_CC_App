@@ -10,7 +10,7 @@ namespace IMC_CC_App.Security
     public static class TokenGenerator
     {
         //private readonly IConfiguration _config;
-        public static string GenerateToken(User? userInfo, string? secretKey)
+        public static string GenerateToken(User? userInfo, string? secretKey, int tokenExpiration)
         {
             if (secretKey == null) throw new UnauthorizedAccessException("site is down: 101"); 
             
@@ -28,7 +28,7 @@ namespace IMC_CC_App.Security
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Expires = DateTime.UtcNow.AddMinutes(tokenExpiration),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
             };
 

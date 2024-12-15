@@ -27,21 +27,21 @@ namespace IMC_CC_App.Routes
                 .ReportApiVersions()
                 .Build();
 
-            RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/statements").WithApiVersionSet(apiVersionSet);
+            RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/statements")
+            .WithApiVersionSet(apiVersionSet)
+            .RequireCors("AllowedOrigins");
 
-            //groupBuilder.MapGet("/", ([FromHeader(Name = AuthConfig.AppKeyHeaderName)] string hAppKey,
-            //    [FromHeader(Name = AuthConfig.ApiKeyHeaderName)] string hApiKey) => Get(hAppKey,null))
-            //    .RequireCors("AllowedOrigins");
-
-            groupBuilder.MapGet("/", ([FromQuery(Name = "id")] int? id,
-                [FromQuery(Name = "getall")] bool? getAllStatements, ClaimsPrincipal principal) => Get(id, principal, getAllStatements ))
-                .RequireCors("AllowedOrigins")
+            groupBuilder.MapGet("/", (
+                [FromQuery(Name = "id")] int? id,
+                [FromQuery(Name = "getall")] bool? getAllStatements, 
+                ClaimsPrincipal principal) => 
+                Get(principal, id, getAllStatements ))
                 .RequireAuthorization(); 
         }
 
 
 
-        protected virtual async Task<ExpenseDTO> Get(int? id, ClaimsPrincipal principal, bool? getAllStatements=false)
+        protected virtual async Task<ExpenseDTO> Get(ClaimsPrincipal principal, int? id, bool? getAllStatements=false)
         {
             var authResult = await _authService.AuthorizeAsync(principal, "User");
             _logger.Warning($"Get Statments - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded} :: id={id}");

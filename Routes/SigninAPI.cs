@@ -44,10 +44,16 @@ namespace IMC_CC_App.Routes
             rType response = new();
             //TODO: Use Redis
             var userInfo = await _repositoryManager.userService.GetAuthUserAsync(request.email);
-            HttpResponseMessage msg;
+            int expiration = 30;
+            if (_config.GetSection("TokenExpiration")?.Value?.ToString() != null)
+                expiration = int.Parse(_config.GetSection("TokenExpiration")?.Value?.ToString());
+            
+            _logger.Warning($"Login: token expires in {expiration} minutes");
+
+            //HttpResponseMessage msg;
             if (userInfo?.Users?.Count > 0)
             {
-                response.access_token = TokenGenerator.GenerateToken(userInfo?.Users?[0], _config.GetSection("AuthKey")?.Value?.ToString());
+                response.access_token = TokenGenerator.GenerateToken(userInfo?.Users?[0], _config.GetSection("AuthKey")?.Value?.ToString(), expiration);
                 response.role = userInfo?.Users?[0].RoleName;
             }
             return response;
