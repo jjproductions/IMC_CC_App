@@ -14,6 +14,8 @@ namespace IMC_CC_App.Repositories
         private IUser _userService;
         //private IPermission _permissionService;
 
+        private IReport _reportService;
+
         public RepositoryManager(DbContext_CC context, ILogger logger)
         {
             _context = context;
@@ -35,8 +37,7 @@ namespace IMC_CC_App.Repositories
         {
             get
             {
-                if ( _statementService == null )
-                    _statementService = new StatementService( _context, _logger);
+                _statementService ??= new StatementService(_context, _logger);
                 return _statementService;
             }
         }
@@ -45,8 +46,7 @@ namespace IMC_CC_App.Repositories
         {
             get
             {
-                if (_expenseService == null)
-                    _expenseService = new ExpenseService( _context, _logger);
+                _expenseService ??= new ExpenseService(_context, _logger);
                 return _expenseService;
             }
         }
@@ -55,10 +55,18 @@ namespace IMC_CC_App.Repositories
         {
             get
             {
-                if ( _userService == null )
-                    _userService = new UserService(_context, _logger);
+                _userService ??= new UserService(_context, _logger);
                 return _userService;
 
+            }
+        }
+
+        public IReport reportService
+        {
+            get
+            {
+                _reportService ??= new ReportService(_context, _logger);
+                return _reportService;
             }
         }
 

@@ -7,6 +7,8 @@
         IUser userService { get; }
         //IPermission permissionService { get; }
 
+        IReport reportService { get; }
+
         void Save();
     }
 }

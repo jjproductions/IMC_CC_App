@@ -33,15 +33,48 @@ namespace IMC_CC_App.Routes
 
             groupBuilder.MapGet("/", (
                 [FromQuery(Name = "id")] int? id,
-                [FromQuery(Name = "getall")] bool? getAllStatements, 
-                ClaimsPrincipal principal) => 
-                Get(principal, id, getAllStatements ))
-                .RequireAuthorization(); 
+                [FromQuery(Name = "getall")] bool? getAllStatements,
+                ClaimsPrincipal principal) =>
+                Get(principal, id, getAllStatements))
+                .RequireAuthorization();
+
+            groupBuilder.MapGet("/openreports", (int rptId, ClaimsPrincipal principal) => GetOpenStatements(rptId, principal))
+                .RequireCors("AllowedOrigins")
+                .RequireAuthorization();
         }
 
+        protected virtual async Task<ExpenseDTO> GetOpenStatements(int rptId, ClaimsPrincipal principal)
+        {
+            var authResult = await _authService.AuthorizeAsync(principal, "User");
+            ExpenseDTO response = new();
+            Expense? expense = null;
+            CancellationToken cancellationToken = CancellationToken.None;
+            List<ReportStatments_SP>? sp_response = await _repositoryManager.statementService.GetReportStatements(rptId, cancellationToken);
 
+            if (sp_response != null)
+            {
+                foreach (ReportStatments_SP rptItem in sp_response)
+                {
+                    expense = new()
+                    {
+                        Amount = rptItem.amount,
+                        Category = rptItem.category,
+                        Description = rptItem.description,
+                        Type = rptItem.type,
+                        Created = rptItem.created,
+                        Id = rptItem.id,
+                        Memo = rptItem.memo,
+                        PostDate = rptItem.post_date.ToString(),
+                        TransactionDate = rptItem.transaction_date.ToString("g")
+                    };
+                    response.Expenses.Add(expense);
+                }
+            }
 
-        protected virtual async Task<ExpenseDTO> Get(ClaimsPrincipal principal, int? id, bool? getAllStatements=false)
+            return response;
+        }
+
+        protected virtual async Task<ExpenseDTO> Get(ClaimsPrincipal principal, int? id, bool? getAllStatements = false)
         {
             var authResult = await _authService.AuthorizeAsync(principal, "User");
             _logger.Warning($"Get Statments - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded} :: id={id}");
@@ -58,6 +91,6 @@ namespace IMC_CC_App.Routes
         }
 
 
-        
+
     }
 }

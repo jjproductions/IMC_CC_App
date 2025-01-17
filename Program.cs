@@ -35,12 +35,12 @@ builder.Services.AddSwaggerGen(x =>
 ////
 
 
-
+// Authentication Setup
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(x => 
+}).AddJwtBearer(x =>
     {
         x.TokenValidationParameters = new TokenValidationParameters
         {
@@ -53,14 +53,15 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+// Authorization Setup
 builder.Services.AddAuthorization(options =>
 {
-options.AddPolicy("User", policy => policy
-    .RequireAuthenticatedUser()
-    .RequireClaim(
-        ClaimTypes.Role,
-        allowedValues: [Permission.Edit.ToString(), Permission.Admin.ToString(), Permission.SuperAdmin.ToString()]
-    ));
+    options.AddPolicy("User", policy => policy
+        .RequireAuthenticatedUser()
+        .RequireClaim(
+            ClaimTypes.Role,
+            allowedValues: [Permission.Edit.ToString(), Permission.Admin.ToString(), Permission.SuperAdmin.ToString()]
+        ));
 
     options.AddPolicy("Admin", policy => policy
         .RequireAuthenticatedUser()
@@ -111,6 +112,7 @@ builder.Services.AddScoped<RouterBase, StatementsAPI>();
 builder.Services.AddScoped<RouterBase, ExpenseAPI>();
 builder.Services.AddScoped<RouterBase, UserAPI>();
 builder.Services.AddScoped<RouterBase, SigninAPI>();
+builder.Services.AddScoped<RouterBase, ReportsAPI>();
 ////
 ///
 //builder.Services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();

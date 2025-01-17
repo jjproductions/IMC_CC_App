@@ -17,13 +17,14 @@ namespace IMC_CC_App.Data
         public DbSet<Users> Users => Set<Users>();
         public DbSet<Transaction> Transactions => Set<Transaction>();
 
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configure AuthorizedUsersDB to have no key
             modelBuilder.Entity<AuthorizedUsersDB>().HasNoKey();
             modelBuilder.Entity<StatmentsDB>().HasNoKey();
             modelBuilder.Entity<UserDataDB>().HasNoKey();
+            modelBuilder.Entity<Report_SP>().HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -32,15 +33,17 @@ namespace IMC_CC_App.Data
         public DbSet<AuthorizedUsersDB> AuthUsers => Set<AuthorizedUsersDB>();
         public DbSet<StatmentsDB> Statments => Set<StatmentsDB>();
         public DbSet<UserDataDB> UserDataDB => Set<UserDataDB>();
-        
+        public DbSet<Report_SP> ReportDB => Set<Report_SP>();
+        public DbSet<ReportStatments_SP> ReportStatementsDB => Set<ReportStatments_SP>();
+
 
 
 
         // Method to call the PostgreSQL function
-        public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string? email=null)
+        public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string? email = null)
         {
-            List<AuthorizedUsersDB>? response = 
-                email == null ? 
+            List<AuthorizedUsersDB>? response =
+                email == null ?
                 (
                     //Return user info for all users
                     response = await AuthUsers
@@ -56,11 +59,11 @@ namespace IMC_CC_App.Data
         }
 
         // Get info from all active users
-        public async Task<List<UserDataDB>> GetUserInfo(string? email=null)
+        public async Task<List<UserDataDB>> GetUserInfo(string? email = null)
         {
             if (email != null)
                 return await UserDataDB
-                .FromSqlRaw("SELECT * FROM get_user('"+ email + "')")
+                .FromSqlRaw("SELECT * FROM get_user('" + email + "')")
                 .ToListAsync();
             else
                 return await UserDataDB
@@ -68,9 +71,9 @@ namespace IMC_CC_App.Data
                 .ToListAsync();
         }
 
-        public async Task<List<StatmentsDB>> GetStatements(string? email=null)
+        //Return statements only for a user
+        public async Task<List<StatmentsDB>> GetStatements(string? email = null)
         {
-            //Return statements only for a user
             return await Statments
                 .FromSqlRaw("SELECT * FROM get_user_statements('" + email + "')").ToListAsync();
         }
@@ -78,7 +81,7 @@ namespace IMC_CC_App.Data
         // Admin use cases - 
         // Statements by User ID
         // Get all statements
-        public async Task<List<StatmentsDB>> GetStatements(int? id=null, bool getAllStatements = false)
+        public async Task<List<StatmentsDB>> GetStatements(int? id = null, bool getAllStatements = false)
         {
             if (getAllStatements)  //Return all statements
                 return await Statments
@@ -87,7 +90,22 @@ namespace IMC_CC_App.Data
             _logger.Warning($"context GetStatements::id={id}");
             //Return statements only for a user
             return await Statments
-                .FromSqlRaw("SELECT * FROM get_user_statements_by_card(" + id + ")").ToListAsync();
+                .FromSqlRaw($"SELECT * FROM get_user_statements_by_card({id})").ToListAsync();
+        }
+
+        // Get all statements assigned to a report
+        public async Task<List<ReportStatments_SP>> GetReportStatements(int ReportId)
+        {
+            return await ReportStatementsDB
+                .FromSqlRaw($"SELECT * FROM get_statements_by_report({ReportId})").ToListAsync();
+        }
+
+
+        // Get all reports in Pending / Returned status
+        public async Task<List<Report_SP>> GetReports_NotSubmitted(int cardNumber)
+        {
+            return await ReportDB
+                .FromSqlRaw($"SELECT * FROM get_reports_by_card_open({cardNumber})").ToListAsync();
         }
 
     }

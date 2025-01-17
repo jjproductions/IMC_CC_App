@@ -30,7 +30,7 @@ namespace IMC_CC_App.Services
         public async Task<CommonDTO> PostExpenseAsync(List<ExpenseRequest> request)
         {
             _logger.Warning("entering ExpenseService");
-            Transaction tranItem = null;
+            Transaction? tranItem = null;
             CommonDTO response = new();
             ConsolidatedInfo consolidatedInfo = await DataOb.GetConsolidatedInfo(_context);
             _logger.Warning("ExpenseService");

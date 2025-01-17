@@ -38,6 +38,8 @@ namespace IMC_CC_App.Models
 
         public int CreatedBy { get; set; } = 0;
 
+        public int? report_id { get; set; }
+
         //public string? UserName { get; set; } = null;
 
         //[Required]
@@ -73,4 +75,30 @@ namespace IMC_CC_App.Models
         public int? report_id { get; set; }
     }
 
+    public class ReportStatments_SP
+    {
+        public required int id { get; set; }
+
+        [Required]
+        public DateTimeOffset transaction_date { get; set; }
+
+        [Required]
+        public DateTimeOffset post_date { get; set; }
+
+        public required string description { get; set; }
+
+        [Required]
+        public double amount { get; set; }
+
+        public required string category { get; set; }
+
+        public required string type { get; set; }
+
+        [Required]
+        public DateTimeOffset created { get; set; } = DateTimeOffset.UtcNow;
+
+        public string? memo { get; set; }
+
+        public int? report_id { get; set; }
+    }
 }

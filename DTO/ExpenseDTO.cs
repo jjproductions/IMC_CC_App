@@ -30,11 +30,12 @@ namespace IMC_CC_App.DTO
         public int Id { get; set; }
 
         [Required]
-        public DateTimeOffset TransactionDate { get; set; }
+        public string TransactionDate { get; set; }
 
         [Required]
-        public DateTimeOffset PostDate { get; set; }
+        public string PostDate { get; set; }
 
+        // public DateTimeOffset TransactionDate1 { get; set; }
         public required double Amount { get; set; }
         
         public required string Description { get; set; }

@@ -11,8 +11,8 @@ namespace IMC_CC_App.Services
     {
         private readonly DbContext_CC _context;
         private ILogger _logger;
-        
-        public StatementService(DbContext_CC context, ILogger logger) 
+
+        public StatementService(DbContext_CC context, ILogger logger)
         {
             _context = context;
             _logger = logger;
@@ -29,7 +29,8 @@ namespace IMC_CC_App.Services
             {
                 statementsResults = await _context.GetStatements(request.CardId, true).ConfigureAwait(false);
                 //_logger.Warning("called by card id");
-            }else
+            }
+            else
                 statementsResults = string.IsNullOrEmpty(request.Email)
                     ? await _context.GetStatements(request.CardId).ConfigureAwait(false)
                     : await _context.GetStatements(request.Email).ConfigureAwait(false);
@@ -46,15 +47,15 @@ namespace IMC_CC_App.Services
                     Created = statement.created,
                     Id = statement.id,
                     Memo = statement.memo,
-                    PostDate = statement.post_date,
-                    TransactionDate = statement.transaction_date,
+                    PostDate = statement.post_date.ToString().Split(" ")[0],
+                    TransactionDate = statement.transaction_date.ToString().Split(" ")[0],
                     ReportID = statement.report_id
                 };
 
                 response.Expenses.Add(expense);
             }
 
-            if (response.Expenses.Count>0)
+            if (response.Expenses.Count > 0)
             {
                 response.Status.Count = response.Expenses.Count();
                 response.Status.StatusCode = 200;
@@ -62,6 +63,14 @@ namespace IMC_CC_App.Services
             }
 
             return response;
+        }
+
+        public async Task<List<ReportStatments_SP>> GetReportStatements(int cardNumber, CancellationToken cancellationToken)
+        {
+            List<ReportStatments_SP>? sp_response = null;
+            sp_response = await _context.GetReportStatements(cardNumber);
+
+            return sp_response;
         }
 
         public Task<ExpenseDTO> UploadStatementsAsync(string statement, CancellationToken cancellationToken)

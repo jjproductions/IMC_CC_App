@@ -4,7 +4,7 @@
     {
         private int _statusCode = -1;
         private int _count = 0;
-        public string? StatusMessage {get; set;}
+        public string? StatusMessage { get; set; }
         public int StatusCode
         {
             get => _statusCode;
@@ -28,5 +28,11 @@
         Edit = 1,
         Admin = 2,
         SuperAdmin = 3
+    }
+
+    public enum StatementStatus
+    {
+        OPEN,
+        NOTOPEN
     }
 }
