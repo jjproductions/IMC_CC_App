@@ -94,10 +94,10 @@ namespace IMC_CC_App.Data
         }
 
         // Get all statements assigned to a report
-        public async Task<List<ReportStatments_SP>> GetReportStatements(int ReportId)
+        public async Task<List<ReportStatments_SP>> GetReportStatements(int reportId)
         {
             return await ReportStatementsDB
-                .FromSqlRaw($"SELECT * FROM get_statements_by_report({ReportId})").ToListAsync();
+                .FromSqlRaw($"SELECT * FROM get_statements_by_report({reportId})").ToListAsync();
         }
 
 
@@ -107,6 +107,20 @@ namespace IMC_CC_App.Data
             return await ReportDB
                 .FromSqlRaw($"SELECT * FROM get_reports_by_card_open({cardNumber})").ToListAsync();
         }
+
+        // Update statements within a report
+        public async Task<Boolean> UpdateStatements(int rptId, List<StatementUpdateRequest> request)
+        {
+            foreach (var item in request)
+            {
+                await Database.ExecuteSqlRawAsync($"SELECT * FROM update_statement({rptId}, {item.Id}, {item.ReportId})");
+            }
+            return true;
+        }
+        // {
+        //     return await ReportDB
+        //         .FromSqlRaw($"SELECT * FROM get_reports_by_card_open({rptId})").ToListAsync();
+        // }
 
     }
 }

@@ -31,15 +31,23 @@ namespace IMC_CC_App.Routes
             .WithApiVersionSet(apiVersionSet)
             .RequireCors("AllowedOrigins");
 
+            // return all statements for a user
             groupBuilder.MapGet("/", (
                 [FromQuery(Name = "id")] int? id,
                 [FromQuery(Name = "getall")] bool? getAllStatements,
-                ClaimsPrincipal principal) =>
-                Get(principal, id, getAllStatements))
+                ClaimsPrincipal principal) => Get(principal, id, getAllStatements))
                 .RequireAuthorization();
 
-            groupBuilder.MapGet("/openreports", (int rptId, ClaimsPrincipal principal) => GetOpenStatements(rptId, principal))
-                .RequireCors("AllowedOrigins")
+            // return all statements for a report
+            groupBuilder.MapGet("/report", (
+                [FromQuery(Name = "id")] int rptId,
+                ClaimsPrincipal principal) => GetOpenStatements(rptId, principal))
+                .RequireAuthorization();
+
+            groupBuilder.MapPost("/", (
+                [FromQuery(Name = "id")] int? rptId,
+                [FromBody] List<StatementUpdateRequest> request,
+                ClaimsPrincipal principal) => UpdateStatements(rptId, request, principal))
                 .RequireAuthorization();
         }
 
@@ -65,7 +73,8 @@ namespace IMC_CC_App.Routes
                         Id = rptItem.id,
                         Memo = rptItem.memo,
                         PostDate = rptItem.post_date.ToString(),
-                        TransactionDate = rptItem.transaction_date.ToString("g")
+                        TransactionDate = rptItem.transaction_date.ToString("g"),
+                        ReportID = rptItem.report_id
                     };
                     response.Expenses.Add(expense);
                 }
@@ -90,7 +99,18 @@ namespace IMC_CC_App.Routes
             return db_result;
         }
 
+        protected virtual async Task<ExpenseDTO> UpdateStatements(int? rptId, List<StatementUpdateRequest> request, ClaimsPrincipal principal)
+        {
+            var authResult = await _authService.AuthorizeAsync(principal, "User");
+            _logger.Warning($"Post Statments - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
 
+            ExpenseDTO response = new();
+
+            response.Status.Count = 5;
+            //response = await _repositoryManager.statementService.UpdateStatementsAsync(rptId, request, CancellationToken.None);
+
+            return response;
+        }
 
     }
 }

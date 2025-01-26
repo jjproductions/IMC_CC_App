@@ -18,7 +18,7 @@ namespace IMC_CC_App.DTO
         public List<Expense> Expenses { get; set; }
     }
 
-    
+
     //Used for displaying activity transactions - Staff
     public class Expense
     {
@@ -37,7 +37,7 @@ namespace IMC_CC_App.DTO
 
         // public DateTimeOffset TransactionDate1 { get; set; }
         public required double Amount { get; set; }
-        
+
         public required string Description { get; set; }
 
         public int CardNumber { get; set; }
@@ -64,11 +64,11 @@ namespace IMC_CC_App.DTO
         public int CardNumber { get; set; }
 
         public required DateTimeOffset TransactionDate { get; set; }
-        
+
         public required DateTimeOffset PostDate { get; set; }
 
         public required string Category { get; set; }
-        
+
         public required string Description { get; set; }
 
         public required string Type { get; set; }
@@ -92,6 +92,19 @@ namespace IMC_CC_App.DTO
         public bool? getAllStatements { get; set; }
     }
 
-    
+    public class StatementUpdateRequest
+    {
+        public required int Id { get; set; }
+
+        public int ReportId { get; set; }
+
+        public required string Category { get; set; }
+
+        public required string Description { get; set; }
+
+        public required string Type { get; set; }
+
+        public string? Memo { get; set; }
+    }
 
 }

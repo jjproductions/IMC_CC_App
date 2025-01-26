@@ -26,5 +26,7 @@ namespace IMC_CC_App.DTO
         public DateTimeOffset Created { get; set; }
 
         public DateTimeOffset Modified { get; set; }
+
+        public string Memo { get; set; }
     }
 }

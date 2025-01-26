@@ -24,20 +24,21 @@ namespace IMC_CC_App.Routes
 
             RouteGroupBuilder groupBuilder = app.MapGroup("/api/v{apiVersion:apiversion}/reports").WithApiVersionSet(apiVersionSet);
 
-            groupBuilder.MapGet("/", (int rptId, ClaimsPrincipal principal) => GetReports(rptId, principal))
+            groupBuilder.MapGet("/", (int id, ClaimsPrincipal principal) => GetReports(id, principal))
                 .RequireCors("AllowedOrigins")
                 .RequireAuthorization();
+
         }
 
-        protected virtual async Task<ReportDTO> GetReports(int rptId, ClaimsPrincipal principal)
+        protected virtual async Task<ReportDTO> GetReports(int id, ClaimsPrincipal principal)
         {
-            _logger.Warning($"GetReports for {rptId}");
+            _logger.Warning($"GetReports for {id}");
             var authResult = await _authService.AuthorizeAsync(principal, "User");
-            ReportDTO? response = await _repositoryManager.reportService.GetOpenReports(rptId);
+            ReportDTO? response = await _repositoryManager.reportService.GetOpenReports(id);
             _logger.Warning($@" 
                 {(response?.Reports == null ?
                     $"returning GetReports: Status: {response?.Reports?[0].Status}" :
-                    $"No Reports for report ID: {rptId}")}
+                    $"No Reports for report ID: {id}")}
             ");
 
             return response;

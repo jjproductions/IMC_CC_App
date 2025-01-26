@@ -65,17 +65,18 @@ namespace IMC_CC_App.Services
             return response;
         }
 
-        public async Task<List<ReportStatments_SP>> GetReportStatements(int cardNumber, CancellationToken cancellationToken)
+        public async Task<List<ReportStatments_SP>> GetReportStatements(int rptId, CancellationToken cancellationToken)
         {
             List<ReportStatments_SP>? sp_response = null;
-            sp_response = await _context.GetReportStatements(cardNumber);
+            sp_response = await _context.GetReportStatements(rptId);
 
             return sp_response;
         }
 
-        public Task<ExpenseDTO> UploadStatementsAsync(string statement, CancellationToken cancellationToken)
+        public Task<ExpenseDTO> UpdateStatementsAsync(int? rptId, List<StatementUpdateRequest> statements, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            ExpenseDTO response = new();
+            return Task.FromResult(response);
         }
     }
 }
