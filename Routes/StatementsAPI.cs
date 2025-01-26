@@ -45,9 +45,8 @@ namespace IMC_CC_App.Routes
                 .RequireAuthorization();
 
             groupBuilder.MapPost("/", (
-                [FromQuery(Name = "id")] int rptId,
-                [FromBody] List<StatementUpdateRequest> request,
-                ClaimsPrincipal principal) => UpdateStatements(rptId, request, principal))
+                [FromBody] StatementUpdateRequestDTO request,
+                ClaimsPrincipal principal) => UpdateStatements(request, principal))
                 .RequireAuthorization();
         }
 
@@ -99,14 +98,14 @@ namespace IMC_CC_App.Routes
             return db_result;
         }
 
-        protected virtual async Task<ExpenseDTO> UpdateStatements(int rptId, List<StatementUpdateRequest> request, ClaimsPrincipal principal)
+        protected virtual async Task<ExpenseDTO> UpdateStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
         {
             var authResult = await _authService.AuthorizeAsync(principal, "User");
             _logger.Warning($"Post Statments - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
 
             ExpenseDTO response = new();
 
-            response = await _repositoryManager.statementService.UpdateStatementsAsync(rptId, request, CancellationToken.None);
+            response = await _repositoryManager.statementService.UpdateStatementsAsync(request, CancellationToken.None);
 
             
             return response;

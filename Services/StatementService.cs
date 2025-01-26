@@ -74,22 +74,29 @@ namespace IMC_CC_App.Services
             return sp_response;
         }
 
-        public async Task<ExpenseDTO> UpdateStatementsAsync(int rptId, List<StatementUpdateRequest> statements, CancellationToken cancellationToken)
+        public async Task<ExpenseDTO> UpdateStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken)
         {
             ExpenseDTO response = new();
             bool result = false;
             int reportId = -1;
-            if (rptId > 0) {
-                reportId = rptId;
+            int newReportId = -1;
+            if (statements.ReportId != null) {
+                reportId = (int)statements.ReportId;
                 result = true;
             }
             else
             {
                 //create new Rpt, get new RptID and set it to reportId
+                newReportId = await _context.CreateReport(statements.CardNumber, statements.ReportName, statements.ReportMemo);
+                if (newReportId > 0)
+                {
+                    reportId = newReportId;
+                    result = true;
+                }
             }
 
             if (result)
-                result = await _context.UpdateStatements(reportId, statements);
+                result = await _context.UpdateStatements(reportId, statements.Statements);
             else
             {
                 response.Status.StatusMessage = "Error creating new report";
@@ -98,7 +105,7 @@ namespace IMC_CC_App.Services
 
             if (result)
             {
-                response.Status.Count = statements.Count;
+                response.Status.Count = statements.Statements.Count;
                 response.Status.StatusCode = 200;
                 response.Status.StatusMessage = "Statements updated successfully";
             }

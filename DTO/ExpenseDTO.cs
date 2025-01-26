@@ -92,6 +92,15 @@ namespace IMC_CC_App.DTO
         public bool? getAllStatements { get; set; }
     }
 
+    public class StatementUpdateRequestDTO
+    {
+        public required int CardNumber { get; set; }
+        public string? ReportMemo { get; set; }
+        public required string ReportName { get; set; }
+        public int? ReportId { get; set; }
+
+        public required List<StatementUpdateRequest> Statements { get; set; }
+    }
     public class StatementUpdateRequest
     {
         public required int Id { get; set; }

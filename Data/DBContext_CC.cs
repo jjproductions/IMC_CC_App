@@ -1,6 +1,7 @@
 ﻿using IMC_CC_App.DTO;
 using IMC_CC_App.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using ILogger = Serilog.ILogger;
 
 namespace IMC_CC_App.Data
@@ -119,8 +120,49 @@ namespace IMC_CC_App.Data
                 //await Database.ExecuteSqlRawAsync($"SELECT update_statements({rptId}, '{statements}'::jsonb)");
             }
 
-            SaveChangesAsync();
+            await SaveChangesAsync();
             return true;
         }
+
+        public async Task<int> CreateReport(int cardNumber, string reportName, string reportMemo)
+        {
+            int result = 0;
+            try
+            {
+                using (var command = Database.GetDbConnection().CreateCommand())
+                {
+                    command.CommandText = "SELECT create_report_by_card(@cardNumber, @reportName, @reportMemo)";
+                    command.CommandType = CommandType.Text;
+
+                    // Add parameters to prevent SQL injection
+                    var cardNumberParam = command.CreateParameter();
+                    cardNumberParam.ParameterName = "cardNumber";
+                    cardNumberParam.Value = cardNumber;
+
+                    var reportNameParam = command.CreateParameter();
+                    reportNameParam.ParameterName = "reportName";
+                    reportNameParam.Value = reportName;
+
+                    var reportMemoParam = command.CreateParameter();
+                    reportMemoParam.ParameterName = "reportMemo";
+                    reportMemoParam.Value = reportMemo;
+
+                    command.Parameters.Add(cardNumberParam);
+                    command.Parameters.Add(reportNameParam);
+                    command.Parameters.Add(reportMemoParam);
+
+                    await Database.OpenConnectionAsync();
+                    result = Convert.ToInt32(await command.ExecuteScalarAsync());
+                    await Database.CloseConnectionAsync();
+                }
+            }
+            catch (Exception err)
+            {
+                _logger.Error($"Create Report by Card SP - {err}");
+            }
+            return result;
+        }
+
+
     }
 }
