@@ -8,7 +8,7 @@ namespace IMC_CC_App.Data
     public class DbContext_CC(DbContextOptions<DbContext_CC> options, ILogger logger) : DbContext(options)
     {
         private readonly ILogger _logger = logger;
-
+        
         public DbSet<CreditCard> CreditCards => Set<CreditCard>();
         public DbSet<Models.Type> Types => Set<Models.Type>();
         public DbSet<Category> Categories => Set<Category>();
@@ -16,7 +16,6 @@ namespace IMC_CC_App.Data
         public DbSet<UserAuth> UserAuths => Set<UserAuth>();
         public DbSet<Users> Users => Set<Users>();
         public DbSet<Transaction> Transactions => Set<Transaction>();
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,9 +34,6 @@ namespace IMC_CC_App.Data
         public DbSet<UserDataDB> UserDataDB => Set<UserDataDB>();
         public DbSet<Report_SP> ReportDB => Set<Report_SP>();
         public DbSet<ReportStatments_SP> ReportStatementsDB => Set<ReportStatments_SP>();
-
-
-
 
         // Method to call the PostgreSQL function
         public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string? email = null)
@@ -100,7 +96,6 @@ namespace IMC_CC_App.Data
                 .FromSqlRaw($"SELECT * FROM get_statements_by_report({reportId})").ToListAsync();
         }
 
-
         // Get all reports in Pending / Returned status
         public async Task<List<Report_SP>> GetReports_NotSubmitted(int cardNumber)
         {
@@ -109,18 +104,23 @@ namespace IMC_CC_App.Data
         }
 
         // Update statements within a report
-        public async Task<Boolean> UpdateStatements(int rptId, List<StatementUpdateRequest> request)
+        public async Task<Boolean> UpdateStatements(int? rptId, List<StatementUpdateRequest> request)
         {
+            //string statements = "";
+
             foreach (var item in request)
             {
-                await Database.ExecuteSqlRawAsync($"SELECT * FROM update_statement({rptId}, {item.Id}, {item.ReportId})");
+                //statements = JsonSerializer.Serialize(request, _jsonSerializerOptions);
+                
+                //statements = $"'{statements}'::jsonb";
+                _logger.Warning($"Calling Update_Statements: {rptId} - {item.Id} - {item.Memo}");
+
+                await Database.ExecuteSqlRawAsync($"SELECT update_statement({rptId}, {item.Id}, '{item.Category}', '{item.Type}', '{item.Memo}')");
+                //await Database.ExecuteSqlRawAsync($"SELECT update_statements({rptId}, '{statements}'::jsonb)");
             }
+
+            SaveChangesAsync();
             return true;
         }
-        // {
-        //     return await ReportDB
-        //         .FromSqlRaw($"SELECT * FROM get_reports_by_card_open({rptId})").ToListAsync();
-        // }
-
     }
 }

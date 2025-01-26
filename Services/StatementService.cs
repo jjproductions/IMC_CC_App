@@ -4,6 +4,7 @@ using IMC_CC_App.Models;
 using IMC_CC_App.Interfaces;
 using ILogger = Serilog.ILogger;
 using Microsoft.EntityFrameworkCore;
+using Azure.Core;
 
 namespace IMC_CC_App.Services
 {
@@ -73,10 +74,40 @@ namespace IMC_CC_App.Services
             return sp_response;
         }
 
-        public Task<ExpenseDTO> UpdateStatementsAsync(int? rptId, List<StatementUpdateRequest> statements, CancellationToken cancellationToken)
+        public async Task<ExpenseDTO> UpdateStatementsAsync(int rptId, List<StatementUpdateRequest> statements, CancellationToken cancellationToken)
         {
             ExpenseDTO response = new();
-            return Task.FromResult(response);
+            bool result = false;
+            int reportId = -1;
+            if (rptId > 0) {
+                reportId = rptId;
+                result = true;
+            }
+            else
+            {
+                //create new Rpt, get new RptID and set it to reportId
+            }
+
+            if (result)
+                result = await _context.UpdateStatements(reportId, statements);
+            else
+            {
+                response.Status.StatusMessage = "Error creating new report";
+                return response;
+            }
+
+            if (result)
+            {
+                response.Status.Count = statements.Count;
+                response.Status.StatusCode = 200;
+                response.Status.StatusMessage = "Statements updated successfully";
+            }
+            else
+            {
+                response.Status.StatusMessage = "Error updating statements";
+            }
+
+            return response;
         }
     }
 }
