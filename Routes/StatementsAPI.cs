@@ -98,16 +98,13 @@ namespace IMC_CC_App.Routes
             return db_result;
         }
 
-        protected virtual async Task<ExpenseDTO> UpdateStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
+        protected virtual async Task<int> UpdateStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
         {
             var authResult = await _authService.AuthorizeAsync(principal, "User");
             _logger.Warning($"Post Statments - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
 
-            ExpenseDTO response = new();
-
+            int response;
             response = await _repositoryManager.statementService.UpdateStatementsAsync(request, CancellationToken.None);
-
-            
             return response;
         }
 

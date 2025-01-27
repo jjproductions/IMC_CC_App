@@ -8,7 +8,7 @@ namespace IMC_CC_App.Interfaces
 
         Task<List<ReportStatments_SP>> GetReportStatements(int cardNumber, CancellationToken cancellationToken);
         Task<ExpenseDTO> GetStatementsAsync(StatementRequest request, CancellationToken cancellationToken);
-        Task<ExpenseDTO> UpdateStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken);
+        Task<int> UpdateStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken);
 
     }
 }

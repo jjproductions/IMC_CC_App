@@ -9,7 +9,7 @@ namespace IMC_CC_App.Data
     public class DbContext_CC(DbContextOptions<DbContext_CC> options, ILogger logger) : DbContext(options)
     {
         private readonly ILogger _logger = logger;
-        
+
         public DbSet<CreditCard> CreditCards => Set<CreditCard>();
         public DbSet<Models.Type> Types => Set<Models.Type>();
         public DbSet<Category> Categories => Set<Category>();
@@ -112,7 +112,7 @@ namespace IMC_CC_App.Data
             foreach (var item in request)
             {
                 //statements = JsonSerializer.Serialize(request, _jsonSerializerOptions);
-                
+
                 //statements = $"'{statements}'::jsonb";
                 _logger.Warning($"Calling Update_Statements: {rptId} - {item.Id} - {item.Memo}");
 
@@ -153,6 +153,8 @@ namespace IMC_CC_App.Data
 
                     await Database.OpenConnectionAsync();
                     result = Convert.ToInt32(await command.ExecuteScalarAsync());
+                    _logger.Warning($"Create Report by Card SP - {cardNumber} returned {result}");
+                    await SaveChangesAsync();
                     await Database.CloseConnectionAsync();
                 }
             }
