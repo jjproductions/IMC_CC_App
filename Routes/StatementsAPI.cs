@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cors;
 using System.Security.Claims;
+using System.Text.Json;
 using ILogger = Serilog.ILogger;
 using Microsoft.AspNetCore.Authorization;
 
@@ -19,6 +20,7 @@ namespace IMC_CC_App.Routes
         private readonly IRepositoryManager _repositoryManager = repositoryManager;
         private readonly ILogger _logger = logger;
         private readonly IAuthorizationService _authService = authService;
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
         public override void AddRoutes(WebApplication app)
         {
@@ -101,9 +103,10 @@ namespace IMC_CC_App.Routes
         protected virtual async Task<int> UpdateStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
         {
             var authResult = await _authService.AuthorizeAsync(principal, "User");
-            _logger.Warning($"Post Statments - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
+            _logger.Warning($"UpdateStatements - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
 
             int response;
+            Console.WriteLine($"UpdateStatements API: # of items to remove - {JsonSerializer.Serialize(request, _jsonSerializerOptions)} :: {request.ReportName}");
             response = await _repositoryManager.statementService.UpdateStatementsAsync(request, CancellationToken.None);
             return response;
         }

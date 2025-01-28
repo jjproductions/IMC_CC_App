@@ -97,7 +97,7 @@ namespace IMC_CC_App.Services
             }
 
             if (result)
-                result = await _context.UpdateStatements(reportId, statements.Statements);
+                result = await _context.UpdateStatements(reportId, statements);
 
             response = result ? reportId : -1;
 

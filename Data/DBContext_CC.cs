@@ -3,6 +3,7 @@ using IMC_CC_App.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using ILogger = Serilog.ILogger;
+using Microsoft.Data.SqlClient;
 
 namespace IMC_CC_App.Data
 {
@@ -87,37 +88,49 @@ namespace IMC_CC_App.Data
             _logger.Warning($"context GetStatements::id={id}");
             //Return statements only for a user
             return await Statments
-                .FromSqlRaw($"SELECT * FROM get_user_statements_by_card({id})").ToListAsync();
+                .FromSqlInterpolated($"SELECT * FROM get_user_statements_by_card({id})").ToListAsync();
         }
 
         // Get all statements assigned to a report
         public async Task<List<ReportStatments_SP>> GetReportStatements(int reportId)
         {
             return await ReportStatementsDB
-                .FromSqlRaw($"SELECT * FROM get_statements_by_report({reportId})").ToListAsync();
+                .FromSqlInterpolated($"SELECT * FROM get_statements_by_report({reportId})").ToListAsync();
         }
 
         // Get all reports in Pending / Returned status
         public async Task<List<Report_SP>> GetReports_NotSubmitted(int cardNumber)
         {
             return await ReportDB
-                .FromSqlRaw($"SELECT * FROM get_reports_by_card_open({cardNumber})").ToListAsync();
+                .FromSqlInterpolated($"SELECT * FROM get_reports_by_card_open({cardNumber})").ToListAsync();
         }
 
         // Update statements within a report
-        public async Task<Boolean> UpdateStatements(int? rptId, List<StatementUpdateRequest> request)
+        public async Task<Boolean> UpdateStatements(int? rptId, StatementUpdateRequestDTO request)
         {
-            //string statements = "";
 
-            foreach (var item in request)
+            // First clear report id from all statements identified in the request
+            Console.WriteLine($"UpdateStatements: # of items to remove - {request.ItemsToDelete?.Length}");
+            _logger.Warning($"UpdateStatements: # of items to remove - {request.ItemsToDelete?.Length}");
+            if (request.ItemsToDelete != null && request.ItemsToDelete.Length > 0)
+            {
+                string statements = string.Join(',', request.ItemsToDelete);
+                _logger.Warning($"Calling update_remove_rptids_statement to remove statement ids: {statements} from report {rptId}");
+                // add rptId so the function will only remove if equal to the report id
+                await Database.ExecuteSqlInterpolatedAsync($"SELECT update_remove_rptids_statement({statements})");
+                await SaveChangesAsync();
+            }
+
+            // Now update the statements with the new information
+            foreach (var item in request.Statements)
             {
                 //statements = JsonSerializer.Serialize(request, _jsonSerializerOptions);
 
                 //statements = $"'{statements}'::jsonb";
-                _logger.Warning($"Calling Update_Statements: {rptId} - {item.Id} - {item.Memo}");
+                _logger.Warning($"Calling update_statement: {rptId} - {item.Id} - {item.Memo}");
 
-                await Database.ExecuteSqlRawAsync($"SELECT update_statement({rptId}, {item.Id}, '{item.Category}', '{item.Type}', '{item.Memo}')");
-                //await Database.ExecuteSqlRawAsync($"SELECT update_statements({rptId}, '{statements}'::jsonb)");
+                await Database.ExecuteSqlInterpolatedAsync($"SELECT update_statement({rptId}, {item.Id}, '{item.Category}', '{item.Type}', '{item.Memo}')");
+                //await Database.ExecuteSqlInterpolatedAsync($"SELECT update_statements({rptId}, '{statements}'::jsonb)");
             }
 
             await SaveChangesAsync();

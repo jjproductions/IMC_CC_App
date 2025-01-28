@@ -98,7 +98,7 @@ namespace IMC_CC_App.DTO
         public string? ReportMemo { get; set; }
         public required string ReportName { get; set; }
         public int? ReportId { get; set; }
-
+        public int[]? ItemsToDelete { get; set; }
         public required List<StatementUpdateRequest> Statements { get; set; }
     }
     public class StatementUpdateRequest
