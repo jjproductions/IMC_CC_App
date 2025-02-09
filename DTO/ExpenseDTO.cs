@@ -54,6 +54,8 @@ namespace IMC_CC_App.DTO
 
         public CreditCardDTO? CardInfo { get; set; }
 
+        public string? ReceiptUrl { get; set; }
+
 
     }
 
@@ -101,6 +103,8 @@ namespace IMC_CC_App.DTO
         public int[]? ItemsToDelete { get; set; }
         public required List<StatementUpdateRequest> Statements { get; set; }
     }
+
+    // Used for updating statements within a report
     public class StatementUpdateRequest
     {
         public required int Id { get; set; }
@@ -114,6 +118,8 @@ namespace IMC_CC_App.DTO
         public required string Type { get; set; }
 
         public string? Memo { get; set; }
+
+        public string? ReceiptUrl { get; set; }
     }
 
 }

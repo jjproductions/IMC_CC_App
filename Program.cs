@@ -14,6 +14,8 @@ using System.Text;
 using IMC_CC_App.DTO;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -86,6 +88,10 @@ builder.Services.AddDbContext<DbContext_CC>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresDB")));
 ////
 
+// Image Storage
+builder.Services.AddScoped<ImagesStoreContext>();
+
+
 //Serilog
 builder.Host.UseSerilog((context, configuration)
     => configuration.ReadFrom.Configuration(context.Configuration));
@@ -105,6 +111,12 @@ builder.Services.AddApiVersioning(options =>
 });
 ////
 
+// Need this to allow large file uploads
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; // 100MB max file size
+});
+
 //Setting up APIs
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 
@@ -113,6 +125,7 @@ builder.Services.AddScoped<RouterBase, ExpenseAPI>();
 builder.Services.AddScoped<RouterBase, UserAPI>();
 builder.Services.AddScoped<RouterBase, SigninAPI>();
 builder.Services.AddScoped<RouterBase, ReportsAPI>();
+builder.Services.AddScoped<RouterBase, ImagesAPI>();
 ////
 ///
 //builder.Services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
@@ -145,7 +158,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 //app.UseMiddleware<AuthorizationMW>();
 
-
+// Top-level route registrations
+//app.MapControllers().WithMetadata(new IgnoreAntiforgeryTokenAttribute());
 
 //*************************************
 // Add Routes from all "Router Classes"

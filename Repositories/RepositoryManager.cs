@@ -7,19 +7,23 @@ namespace IMC_CC_App.Repositories
 {
     public class RepositoryManager : IRepositoryManager
     {
+        private readonly IConfiguration? _configuration;
         private readonly DbContext_CC _context;
+        private readonly ImagesStoreContext _contextImages;
         private readonly ILogger _logger;
         private IExpense _expenseService;
         private IStatement _statementService;
         private IUser _userService;
         //private IPermission _permissionService;
+        private IImage _imageService;
 
         private IReport _reportService;
 
-        public RepositoryManager(DbContext_CC context, ILogger logger)
+        public RepositoryManager(DbContext_CC context, ILogger logger, IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
 
@@ -67,6 +71,17 @@ namespace IMC_CC_App.Repositories
             {
                 _reportService ??= new ReportService(_context, _logger);
                 return _reportService;
+            }
+        }
+
+        public IImage imageService
+        {
+            get
+            {
+#pragma warning disable CS8604 // Possible null reference argument.
+                _imageService ??= new ImageService(_contextImages, _logger, _configuration);
+#pragma warning restore CS8604 // Possible null reference argument.
+                return _imageService;
             }
         }
 

@@ -1,12 +1,18 @@
 using System.Net;
 using Asp.Versioning.Builder;
 using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 using IMC_CC_App.Components;
 using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
 using IMC_CC_App.Security;
 using Microsoft.AspNetCore.Mvc;
 using ILogger = Serilog.ILogger;
+using IMC_CC_App.Utility;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+
 
 namespace IMC_CC_App.Routes
 {
@@ -16,12 +22,14 @@ namespace IMC_CC_App.Routes
         private readonly IRepositoryManager _repositoryManager;
         private readonly ILogger _logger;
         private readonly IConfiguration _config;
+        private readonly IAuthorizationService _authService;
 
-        public SigninAPI(IRepositoryManager repositoryManager, ILogger logger, IConfiguration config)
+        public SigninAPI(IRepositoryManager repositoryManager, ILogger logger, IConfiguration config, IAuthorizationService authService)
         {
             _repositoryManager = repositoryManager;
             _logger = logger;
             _config = config;
+            _authService = authService;
         }
 
         public override void AddRoutes(WebApplication app)
@@ -37,6 +45,10 @@ namespace IMC_CC_App.Routes
                 .RequireCors("AllowedOrigins")
                 .AllowAnonymous();
 
+            groupBuilder.MapPost("/sastoken", ([FromBody] SASTokenRefreshRequest tokenRequest, ClaimsPrincipal principal) => GenerateSASToken(tokenRequest, principal))
+                .RequireCors("AllowedOrigins")
+                .RequireAuthorization();
+
         }
 
         protected virtual async Task<rType> Post(Login request)
@@ -47,7 +59,7 @@ namespace IMC_CC_App.Routes
             int expiration = 30;
             if (_config.GetSection("TokenExpiration")?.Value?.ToString() != null)
                 expiration = int.Parse(_config.GetSection("TokenExpiration")?.Value?.ToString());
-            
+
             _logger.Warning($"Login: token expires in {expiration} minutes");
 
             //HttpResponseMessage msg;
@@ -57,13 +69,58 @@ namespace IMC_CC_App.Routes
                 response.role = userInfo?.Users?[0].RoleName;
             }
             return response;
-            
+
         }
 
+        protected virtual async Task<string> GenerateSASToken(SASTokenRefreshRequest tokenRequest, ClaimsPrincipal principal)
+        {
+            var authResult = await _authService.AuthorizeAsync(principal, "User");
+            string sasToken = string.Empty;
+            try
+            {
+                if (string.IsNullOrEmpty(tokenRequest.BlobName))
+                {
+                    _logger.Error("GenerateSASToken: blobName is null");
+                    return sasToken;
+                }
+
+                tokenRequest.ContainerName = string.IsNullOrEmpty(tokenRequest.ContainerName) ? _config["ImageContainerName"] : tokenRequest.ContainerName;
+                // string? tokenExpiration = blobName.Split("?").Length > 1 ?
+                //     SAS.CheckSASExpiration(blobName.Split("?")[1]) :
+                //     null;
+
+                if (true)
+                {
+                    var blobServiceClient = new BlobServiceClient(_config["ImageContainerConnectionString"]);
+                    var blobContainerClient = blobServiceClient.GetBlobContainerClient(tokenRequest.ContainerName);
+                    var blobClient = blobContainerClient.GetBlobClient(tokenRequest.BlobName);
+
+                    if (!await blobClient.ExistsAsync())
+                    {
+                        throw new InvalidOperationException("Blob does not exist.");
+                    }
+
+                    BlobSasBuilder sasBuilder = new BlobSasBuilder()
+                    {
+                        BlobName = tokenRequest.BlobName,
+                        Resource = "b", // 'b' for blob
+                        ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(15)
+                    };
+                    sasBuilder.SetPermissions(BlobSasPermissions.Read);
+                    sasToken = blobClient.GenerateSasUri(sasBuilder).ToString();
+                    Console.WriteLine($"Blob URL with SAS: {sasToken}");
+                }
+            }
+            catch (RequestFailedException ex)
+            {
+                _logger.Error($"GenerateSASToken: {ex.Message}");
+            }
+            return sasToken;
+        }
         public class rType
         {
-            public string? access_token {get; set;}
-            public string? role {get; set;}
+            public string? access_token { get; set; }
+            public string? role { get; set; }
         }
     }
 }

@@ -29,7 +29,7 @@ namespace IMC_CC_App.Services
 
             for (int i = 0; i < sp_response?.Count; i++)
             {
-                _logger.Warning($"STATUS: {sp_response[i].status}");
+                //_logger.Warning($"STATUS: {sp_response[i].status}");
                 if (Enum.TryParse<StatusCategory>(sp_response[i].status, true, out StatusCategory result))
                 {
 
@@ -39,9 +39,10 @@ namespace IMC_CC_App.Services
                         Name = sp_response[i].name,
                         Status = result.ToString(),
                         Created = sp_response[i].created,
-                        Modified = sp_response[i].modified
+                        Modified = sp_response[i].modified,
+                        Memo = sp_response[i].memo
                     };
-                    _logger.Warning($"assigning Report Detail {reportDetail.Status}");
+                    //_logger.Warning($"assigning Report Detail {reportDetail.Status}");
                     reportList.Add(reportDetail);
                 }
                 else
@@ -57,6 +58,14 @@ namespace IMC_CC_App.Services
             return response;
         }
 
+        public async Task<Boolean> DeleteReport(int reportId, int[] itemsToDelete)
+        {
+            return await _context.DeleteReport(reportId, itemsToDelete);
+        }
 
+        public async Task<int> CreateReport(ReportNewRequest request)
+        {
+            return await _context.CreateNewReport(request);
+        }
     }
 }

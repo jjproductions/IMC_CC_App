@@ -20,24 +20,4 @@ namespace IMC_CC_App.Utility
             return response;
         }
     }
-
-    // public class ClaimsInfo
-    // {
-    //     private readonly IAuthorizationService _authService;
-    //     private readonly ILogger _logger;
-
-    //     public ClaimsInfo (IAuthorizationService authService, ILogger logger)
-    //     {
-    //         _authService = authService;
-    //         _logger = logger;
-    //     }
-    //     public async Task<AuthorizationResult?> Authuser(ClaimsPrincipal cp, string policy)
-    //     {
-    //         AuthorizationResult? response = null;
-
-    //         response = await _authService.AuthorizeAsync(cp, policy);
-    //         _logger.Warning($"Get Users - Auth claim with policy {policy} is {cp.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{response.Succeeded}");
-    //         return response;
-    //     }
-    // }
 }

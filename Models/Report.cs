@@ -31,6 +31,8 @@ namespace IMC_CC_App.Models
         public DateTimeOffset created { get; set; }
 
         public DateTimeOffset modified { get; set; }
+
+        public string? memo { get; set; }
     }
 
     public enum StatusCategory

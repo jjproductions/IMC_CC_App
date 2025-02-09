@@ -6,7 +6,7 @@
         IExpense expenseService { get; }
         IUser userService { get; }
         //IPermission permissionService { get; }
-
+        IImage imageService { get; }
         IReport reportService { get; }
 
         void Save();

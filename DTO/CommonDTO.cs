@@ -22,6 +22,12 @@
         public const string Role = "Role";
     }
 
+    public class SASTokenRefreshRequest
+    {
+        public string? ContainerName { get; set; }
+        public required string BlobName { get; set; }
+    }
+
     public enum Permission
     {
         Viewer = 0,

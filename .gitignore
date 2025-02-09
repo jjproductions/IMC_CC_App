@@ -363,3 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 **/.DS_Store
+
+# Optional: Ignores all environment-specific settings
+appsettings.*.json

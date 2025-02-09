@@ -37,6 +37,8 @@ namespace IMC_CC_App.Data
         public DbSet<Report_SP> ReportDB => Set<Report_SP>();
         public DbSet<ReportStatments_SP> ReportStatementsDB => Set<ReportStatments_SP>();
 
+        //public DbSet<int> UpdateStDB => Set<int>();
+
         // Method to call the PostgreSQL function
         public async Task<List<AuthorizedUsersDB>> GetAuthUserInfo(string? email = null)
         {
@@ -94,8 +96,10 @@ namespace IMC_CC_App.Data
         // Get all statements assigned to a report
         public async Task<List<ReportStatments_SP>> GetReportStatements(int reportId)
         {
-            return await ReportStatementsDB
+            var response = await ReportStatementsDB
                 .FromSqlInterpolated($"SELECT * FROM get_statements_by_report({reportId})").ToListAsync();
+            _logger.Warning($"GetReportStatements - {response} statements returned for report {reportId}");
+            return response;
         }
 
         // Get all reports in Pending / Returned status
@@ -106,6 +110,7 @@ namespace IMC_CC_App.Data
         }
 
         // Update statements within a report
+        // change this to return the updated data ***
         public async Task<Boolean> UpdateStatements(int? rptId, StatementUpdateRequestDTO request)
         {
 
@@ -127,13 +132,12 @@ namespace IMC_CC_App.Data
                 //statements = JsonSerializer.Serialize(request, _jsonSerializerOptions);
 
                 //statements = $"'{statements}'::jsonb";
-                _logger.Warning($"Calling update_statement: {rptId} - {item.Id} - {item.Memo}");
+                _logger.Warning($"Calling update_statement: {rptId} - {item.Id} - {item.Memo} - {item.Category} - {item.Type} - {item.ReceiptUrl}");
 
-                await Database.ExecuteSqlInterpolatedAsync($"SELECT update_statement({rptId}, {item.Id}, '{item.Category}', '{item.Type}', '{item.Memo}')");
-                //await Database.ExecuteSqlInterpolatedAsync($"SELECT update_statements({rptId}, '{statements}'::jsonb)");
+                await Database.ExecuteSqlInterpolatedAsync($"SELECT update_statement({rptId}, {item.Id}, {item.Category}, {item.Type}, {item.Memo}, {item.ReceiptUrl})");
+                await SaveChangesAsync();
             }
 
-            await SaveChangesAsync();
             return true;
         }
 
@@ -178,6 +182,89 @@ namespace IMC_CC_App.Data
             return result;
         }
 
+        public async Task<bool> DeleteReport(int reportId, int[] itemsToDelete)
+        {
+            // Don't believe i need this check.  If no statements to delete, delete the report
+            // if (itemsToDelete == null || itemsToDelete.Length == 0)
+            // {
+            //     _logger.Warning($"Delete Report operation failed because statement id parameter is empty - {reportId}");
+            //     return false;
+            // }
 
+            string expenseIds = itemsToDelete != null ? string.Join(',', itemsToDelete) : string.Empty;
+            try
+            {
+                using (var command = Database.GetDbConnection().CreateCommand())
+                {
+                    command.CommandText = "SELECT delete_report(@reportId, @expenseIds)";
+                    command.CommandType = CommandType.Text;
+
+                    // Add parameters to prevent SQL injection
+                    var reportIdParam = command.CreateParameter();
+                    reportIdParam.ParameterName = "reportId";
+                    reportIdParam.Value = reportId;
+
+                    var reportDeletedItemsParam = command.CreateParameter();
+                    reportDeletedItemsParam.ParameterName = "expenseIds";
+                    reportDeletedItemsParam.Value = expenseIds;
+
+                    command.Parameters.Add(reportIdParam);
+                    command.Parameters.Add(reportDeletedItemsParam);
+
+                    await Database.OpenConnectionAsync();
+                    await command.ExecuteNonQueryAsync();
+                    await SaveChangesAsync();
+                    await Database.CloseConnectionAsync();
+                }
+            }
+            catch (Exception err)
+            {
+                _logger.Error($"DeleteReport by ID SP - {err}");
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<int> CreateNewReport(ReportNewRequest request)
+        {
+            int result = 0;
+            try
+            {
+                _logger.Warning($"CreateNewReport - {request.Name} : {request.CardNumber}");
+                using (var command = Database.GetDbConnection().CreateCommand())
+                {
+                    command.CommandText = "SELECT create_report(@card_number, @report_name, @report_memo)";
+                    command.CommandType = CommandType.Text;
+
+                    // Add parameters to prevent SQL injection
+                    var cardNumberParam = command.CreateParameter();
+                    cardNumberParam.ParameterName = "card_number";
+                    cardNumberParam.Value = request.CardNumber;
+
+                    var reportNameParam = command.CreateParameter();
+                    reportNameParam.ParameterName = "report_name";
+                    reportNameParam.Value = request.Name;
+
+                    var reportMemoParam = command.CreateParameter();
+                    reportMemoParam.ParameterName = "report_memo";
+                    reportMemoParam.Value = request.Memo;
+
+                    command.Parameters.Add(cardNumberParam);
+                    command.Parameters.Add(reportNameParam);
+                    command.Parameters.Add(reportMemoParam);
+
+                    await Database.OpenConnectionAsync();
+                    result = Convert.ToInt32(await command.ExecuteScalarAsync());
+                    _logger.Warning($"New report created - {request.Name} with ID: {result}");
+                    await SaveChangesAsync();
+                    await Database.CloseConnectionAsync();
+                }
+            }
+            catch (Exception err)
+            {
+                _logger.Error($"New report creation failed in SP - {err}");
+            }
+            return result;
+        }
     }
 }

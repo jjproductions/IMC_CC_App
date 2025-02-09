@@ -27,6 +27,22 @@ namespace IMC_CC_App.DTO
 
         public DateTimeOffset Modified { get; set; }
 
-        public string Memo { get; set; }
+        public string? Memo { get; set; }
+    }
+
+    public class ReportDeleteRequest
+    {
+        public required int ReportId { get; set; }
+
+        public required int[] ItemsToDelete { get; set; }
+    }
+
+    public class ReportNewRequest
+    {
+        public required string Name { get; set; }
+
+        public required int CardNumber { get; set; }
+
+        public string? Memo { get; set; }
     }
 }

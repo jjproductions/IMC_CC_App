@@ -46,6 +46,7 @@ namespace IMC_CC_App.Models
         //public CreditCard CardInfo { get; set; }
     }
 
+    // stored procedure to get transactions
     public class StatmentsDB
     {
         public required int id { get; set; }
@@ -73,8 +74,11 @@ namespace IMC_CC_App.Models
         public string? memo { get; set; }
 
         public int? report_id { get; set; }
+
+        public string? receipt_url { get; set; }
     }
 
+    // Stored procedure to get transactions for a report
     public class ReportStatments_SP
     {
         public required int id { get; set; }
@@ -100,5 +104,7 @@ namespace IMC_CC_App.Models
         public string? memo { get; set; }
 
         public int? report_id { get; set; }
+
+        public string? receipt_url { get; set; }
     }
 }

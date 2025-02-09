@@ -75,8 +75,10 @@ namespace IMC_CC_App.Routes
                         Memo = rptItem.memo,
                         PostDate = rptItem.post_date.ToString(),
                         TransactionDate = rptItem.transaction_date.ToString("g"),
-                        ReportID = rptItem.report_id
+                        ReportID = rptItem.report_id,
+                        ReceiptUrl = rptItem.receipt_url
                     };
+                    _logger.Warning($"GetOpenStatements - Report {rptId} Expense ID: {expense.Id} :: Receipt URL: {expense.ReceiptUrl}");
                     response.Expenses.Add(expense);
                 }
             }
@@ -103,10 +105,10 @@ namespace IMC_CC_App.Routes
         protected virtual async Task<int> UpdateStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
         {
             var authResult = await _authService.AuthorizeAsync(principal, "User");
-            _logger.Warning($"UpdateStatements - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
+            //_logger.Warning($"UpdateStatements - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
 
             int response;
-            Console.WriteLine($"UpdateStatements API: # of items to remove - {JsonSerializer.Serialize(request, _jsonSerializerOptions)} :: {request.ReportName}");
+            //Console.WriteLine($"UpdateStatements API: # of items to remove - {JsonSerializer.Serialize(request, _jsonSerializerOptions)} :: {request.ReportId}");
             response = await _repositoryManager.statementService.UpdateStatementsAsync(request, CancellationToken.None);
             return response;
         }

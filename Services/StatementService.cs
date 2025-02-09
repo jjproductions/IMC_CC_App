@@ -50,7 +50,8 @@ namespace IMC_CC_App.Services
                     Memo = statement.memo,
                     PostDate = statement.post_date.ToString().Split(" ")[0],
                     TransactionDate = statement.transaction_date.ToString().Split(" ")[0],
-                    ReportID = statement.report_id
+                    ReportID = statement.report_id,
+                    ReceiptUrl = statement.receipt_url
                 };
 
                 response.Expenses.Add(expense);
@@ -68,10 +69,7 @@ namespace IMC_CC_App.Services
 
         public async Task<List<ReportStatments_SP>> GetReportStatements(int rptId, CancellationToken cancellationToken)
         {
-            List<ReportStatments_SP>? sp_response = null;
-            sp_response = await _context.GetReportStatements(rptId);
-
-            return sp_response;
+            return await _context.GetReportStatements(rptId);
         }
 
         public async Task<int> UpdateStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken)
@@ -79,6 +77,8 @@ namespace IMC_CC_App.Services
             bool result = false;
             int reportId = -1;
             int response;
+            _logger.Warning($"StatementsService:UpdateStatementsAsync - report id: {statements.ReportId}");
+            Console.WriteLine($"StatementsService:UpdateStatementsAsync - report id: {statements.ReportId}");
             if (statements.ReportId != null)
             {
                 reportId = (int)statements.ReportId;
