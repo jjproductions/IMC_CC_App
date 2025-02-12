@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using System.Data;
 using ILogger = Serilog.ILogger;
 using Microsoft.Data.SqlClient;
+using System.Text.Json;
 
 namespace IMC_CC_App.Data
 {
     public class DbContext_CC(DbContextOptions<DbContext_CC> options, ILogger logger) : DbContext(options)
     {
         private readonly ILogger _logger = logger;
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions();
 
         public DbSet<CreditCard> CreditCards => Set<CreditCard>();
         public DbSet<Models.Type> Types => Set<Models.Type>();
@@ -98,7 +100,9 @@ namespace IMC_CC_App.Data
         {
             var response = await ReportStatementsDB
                 .FromSqlInterpolated($"SELECT * FROM get_statements_by_report({reportId})").ToListAsync();
-            _logger.Warning($"GetReportStatements - {response} statements returned for report {reportId}");
+
+            string statements = JsonSerializer.Serialize(response, _jsonSerializerOptions);
+            _logger.Warning($"GetReportStatements - {statements} statements returned for report {reportId} :: ");
             return response;
         }
 
@@ -109,6 +113,42 @@ namespace IMC_CC_App.Data
                 .FromSqlInterpolated($"SELECT * FROM get_reports_by_card_open({cardNumber})").ToListAsync();
         }
 
+
+        public async Task<List<ReportStatments_SP>> UpdateReportStatements(int rptId, StatementUpdateRequestDTO request)
+        {
+            List<ReportStatments_SP> response = new();
+            // First clear report id from all statements identified in the request
+            if (request.ItemsToDelete != null && request.ItemsToDelete.Length > 0)
+            {
+                string statements = string.Join(',', request.ItemsToDelete);
+                _logger.Warning($"UpdateReportStatements_DB: Calling update_remove_rptids_statement to remove statement ids: {statements} from report {rptId}");
+                // add rptId so the function will only remove if equal to the report id
+                await Database.ExecuteSqlInterpolatedAsync($"SELECT update_remove_rptids_statement({statements})");
+                await SaveChangesAsync();
+            }
+
+            // Now update the statements with the new information
+            foreach (var item in request.Statements)
+            {
+                //statements = JsonSerializer.Serialize(request, _jsonSerializerOptions);
+
+                //statements = $"'{statements}'::jsonb";
+                _logger.Warning($"UpdateReportStatements_DB: Calling update_statement: {rptId} - {item.Id} - {item.Memo} - {item.Category} - {item.Type} - {item.ReceiptUrl}");
+
+                await Database.ExecuteSqlInterpolatedAsync($"SELECT update_statement({rptId}, {item.Id}, {item.Category}, {item.Type}, {item.Memo}, {item.ReceiptUrl})");
+                await SaveChangesAsync();
+            }
+
+            this.ChangeTracker.Clear();
+
+            response = await ReportStatementsDB
+                .FromSqlInterpolated($"SELECT * FROM get_statements_by_report({rptId})")
+                .AsNoTracking()
+                .ToListAsync();
+
+            _logger.Warning($"UpdateReportStatements_DB - {JsonSerializer.Serialize(response, _jsonSerializerOptions)} statements returned for report {rptId}");
+            return response;
+        }
         // Update statements within a report
         // change this to return the updated data ***
         public async Task<Boolean> UpdateStatements(int? rptId, StatementUpdateRequestDTO request)
@@ -137,6 +177,7 @@ namespace IMC_CC_App.Data
                 await Database.ExecuteSqlInterpolatedAsync($"SELECT update_statement({rptId}, {item.Id}, {item.Category}, {item.Type}, {item.Memo}, {item.ReceiptUrl})");
                 await SaveChangesAsync();
             }
+
 
             return true;
         }

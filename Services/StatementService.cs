@@ -103,5 +103,68 @@ namespace IMC_CC_App.Services
 
             return response;
         }
+
+        public async Task<ExpenseDTO> UpdateReportStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken)
+        {
+            bool result = false;
+            int reportId = -1;
+            List<ReportStatments_SP> response_SP = [];
+            ExpenseDTO response = new();
+            Expense? expense = null;
+            _logger.Warning($"StatementsService:UpdateReportStatementsAsync - report id: {statements.ReportId}");
+            Console.WriteLine($"StatementsService:UpdateReportStatementsAsync - report id: {statements.ReportId}");
+            try
+            {
+                // updating an existing report
+                if (statements.ReportId != null)
+                {
+                    reportId = (int)statements.ReportId;
+                    result = true;
+                }
+                else
+                {
+                    //create new Rpt, get new RptID and set it to reportId
+                    int newReportId = await _context.CreateReport(statements.CardNumber, statements.ReportName, statements.ReportMemo);
+                    if (newReportId > 0)
+                    {
+                        reportId = newReportId;
+                        result = true;
+                    }
+                }
+
+                if (result)
+                    response_SP = await _context.UpdateReportStatements(reportId, statements);
+
+                if (response_SP.Count > 0)
+                {
+                    foreach (ReportStatments_SP rptItem in response_SP)
+                    {
+                        expense = new()
+                        {
+                            Amount = rptItem.amount,
+                            Category = rptItem.category,
+                            Description = rptItem.description,
+                            Type = rptItem.type,
+                            Created = rptItem.created,
+                            Id = rptItem.id,
+                            Memo = rptItem.memo,
+                            PostDate = rptItem.post_date.ToString("g"),
+                            TransactionDate = rptItem.transaction_date.ToString("g"),
+                            ReportID = rptItem.report_id,
+                            ReceiptUrl = rptItem.receipt_url
+                        };
+                        _logger.Warning($"UpdateReportStatementsAsync - Report {expense.ReportID} Expense ID: {expense.Id} :: Receipt URL: {expense.ReceiptUrl}");
+                        response.Expenses.Add(expense);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"UpdateReportStatementsAsync: {ex.Message}");
+                response.Expenses = [];
+            }
+
+            return response;
+        }
     }
 }

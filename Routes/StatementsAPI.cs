@@ -50,6 +50,11 @@ namespace IMC_CC_App.Routes
                 [FromBody] StatementUpdateRequestDTO request,
                 ClaimsPrincipal principal) => UpdateStatements(request, principal))
                 .RequireAuthorization();
+
+            groupBuilder.MapPost("/update", (
+                [FromBody] StatementUpdateRequestDTO request,
+                ClaimsPrincipal principal) => UpdateReportStatements(request, principal))
+                .RequireAuthorization();
         }
 
         protected virtual async Task<ExpenseDTO> GetOpenStatements(int rptId, ClaimsPrincipal principal)
@@ -113,5 +118,11 @@ namespace IMC_CC_App.Routes
             return response;
         }
 
+        protected virtual async Task<ExpenseDTO> UpdateReportStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
+        {
+            var authResult = await _authService.AuthorizeAsync(principal, "User");
+            //Console.WriteLine($"UpdateStatements API: # of items to remove - {JsonSerializer.Serialize(request, _jsonSerializerOptions)} :: {request.ReportId}");
+            return await _repositoryManager.statementService.UpdateReportStatementsAsync(request, CancellationToken.None);
+        }
     }
 }

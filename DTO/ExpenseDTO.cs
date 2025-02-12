@@ -10,7 +10,7 @@ namespace IMC_CC_App.DTO
         public ExpenseDTO()
         {
             Status = new();
-            Expenses = new();
+            Expenses = [];
         }
 
         [Required]

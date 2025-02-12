@@ -10,5 +10,7 @@ namespace IMC_CC_App.Interfaces
         Task<ExpenseDTO> GetStatementsAsync(StatementRequest request, CancellationToken cancellationToken);
         Task<int> UpdateStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken);
 
+        Task<ExpenseDTO> UpdateReportStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken);
+
     }
 }
