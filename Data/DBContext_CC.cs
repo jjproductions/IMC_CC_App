@@ -28,6 +28,8 @@ namespace IMC_CC_App.Data
             modelBuilder.Entity<StatmentsDB>().HasNoKey();
             modelBuilder.Entity<UserDataDB>().HasNoKey();
             modelBuilder.Entity<Report_SP>().HasNoKey();
+            modelBuilder.Entity<ReportStatments_SP>().HasNoKey();
+            modelBuilder.Entity<UpdateReport_SP>().HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -38,6 +40,7 @@ namespace IMC_CC_App.Data
         public DbSet<UserDataDB> UserDataDB => Set<UserDataDB>();
         public DbSet<Report_SP> ReportDB => Set<Report_SP>();
         public DbSet<ReportStatments_SP> ReportStatementsDB => Set<ReportStatments_SP>();
+        public DbSet<UpdateReport_SP> ReportUpdateResponse => Set<UpdateReport_SP>();
 
         //public DbSet<int> UpdateStDB => Set<int>();
 
@@ -99,7 +102,7 @@ namespace IMC_CC_App.Data
         public async Task<List<ReportStatments_SP>> GetReportStatements(int reportId)
         {
             var response = await ReportStatementsDB
-                .FromSqlInterpolated($"SELECT * FROM get_statements_by_report({reportId})").ToListAsync();
+                .FromSqlInterpolated($"SELECT * FROM get_statements_by_report({reportId})").AsNoTracking().ToListAsync();
 
             string statements = JsonSerializer.Serialize(response, _jsonSerializerOptions);
             _logger.Warning($"GetReportStatements - {statements} statements returned for report {reportId} :: ");
@@ -110,9 +113,8 @@ namespace IMC_CC_App.Data
         public async Task<List<Report_SP>> GetReports_NotSubmitted(int cardNumber)
         {
             return await ReportDB
-                .FromSqlInterpolated($"SELECT * FROM get_reports_by_card_open({cardNumber})").ToListAsync();
+                .FromSqlInterpolated($"SELECT * FROM get_reports_by_card_open({cardNumber})").AsNoTracking().ToListAsync();
         }
-
 
         public async Task<List<ReportStatments_SP>> UpdateReportStatements(int rptId, StatementUpdateRequestDTO request)
         {
@@ -136,9 +138,9 @@ namespace IMC_CC_App.Data
                 _logger.Warning($"UpdateReportStatements_DB: Calling update_statement: {rptId} - {item.Id} - {item.Memo} - {item.Category} - {item.Type} - {item.ReceiptUrl}");
 
                 await Database.ExecuteSqlInterpolatedAsync($"SELECT update_statement({rptId}, {item.Id}, {item.Category}, {item.Type}, {item.Memo}, {item.ReceiptUrl})");
-                await SaveChangesAsync();
             }
 
+            await SaveChangesAsync();
             this.ChangeTracker.Clear();
 
             response = await ReportStatementsDB
@@ -182,45 +184,25 @@ namespace IMC_CC_App.Data
             return true;
         }
 
-        public async Task<int> CreateReport(int cardNumber, string reportName, string reportMemo)
+        public async Task<UpdateReport_SP> UpdateReport(int rptId, string? reportMemo, string status)
         {
-            int result = 0;
             try
             {
-                using (var command = Database.GetDbConnection().CreateCommand())
-                {
-                    command.CommandText = "SELECT create_report_by_card(@cardNumber, @reportName, @reportMemo)";
-                    command.CommandType = CommandType.Text;
+                var result = await ReportUpdateResponse
+                        .FromSqlInterpolated($@"SELECT * FROM update_report_by_id({rptId}, {status}, {reportMemo})")
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync();
 
-                    // Add parameters to prevent SQL injection
-                    var cardNumberParam = command.CreateParameter();
-                    cardNumberParam.ParameterName = "cardNumber";
-                    cardNumberParam.Value = cardNumber;
+                _logger.Warning($"DBCC:Update Report by Id SP - {result?.status} :: {result?.name}` ");
+                await SaveChangesAsync();
+                return result;
 
-                    var reportNameParam = command.CreateParameter();
-                    reportNameParam.ParameterName = "reportName";
-                    reportNameParam.Value = reportName;
-
-                    var reportMemoParam = command.CreateParameter();
-                    reportMemoParam.ParameterName = "reportMemo";
-                    reportMemoParam.Value = reportMemo;
-
-                    command.Parameters.Add(cardNumberParam);
-                    command.Parameters.Add(reportNameParam);
-                    command.Parameters.Add(reportMemoParam);
-
-                    await Database.OpenConnectionAsync();
-                    result = Convert.ToInt32(await command.ExecuteScalarAsync());
-                    _logger.Warning($"Create Report by Card SP - {cardNumber} returned {result}");
-                    await SaveChangesAsync();
-                    await Database.CloseConnectionAsync();
-                }
             }
             catch (Exception err)
             {
                 _logger.Error($"Create Report by Card SP - {err}");
             }
-            return result;
+            return null;
         }
 
         public async Task<bool> DeleteReport(int reportId, int[] itemsToDelete)
@@ -266,15 +248,15 @@ namespace IMC_CC_App.Data
             return true;
         }
 
-        public async Task<int> CreateNewReport(ReportNewRequest request)
+        public async Task<int> CreateReport(ReportNewRequest request)
         {
             int result = 0;
             try
             {
-                _logger.Warning($"CreateNewReport - {request.Name} : {request.CardNumber}");
+                _logger.Warning($"CreateReport - {request.Name} : {request.CardNumber} : {request.Status.ToString()}");
                 using (var command = Database.GetDbConnection().CreateCommand())
                 {
-                    command.CommandText = "SELECT create_report(@card_number, @report_name, @report_memo)";
+                    command.CommandText = "SELECT create_report(@card_number, @report_name, @report_memo, @report_status)";
                     command.CommandType = CommandType.Text;
 
                     // Add parameters to prevent SQL injection
@@ -290,20 +272,26 @@ namespace IMC_CC_App.Data
                     reportMemoParam.ParameterName = "report_memo";
                     reportMemoParam.Value = request.Memo;
 
+                    var reportStatusParam = command.CreateParameter();
+                    reportStatusParam.ParameterName = "report_status";
+                    reportStatusParam.Value = request.Status.ToString();
+
                     command.Parameters.Add(cardNumberParam);
                     command.Parameters.Add(reportNameParam);
                     command.Parameters.Add(reportMemoParam);
+                    command.Parameters.Add(reportStatusParam);
+
 
                     await Database.OpenConnectionAsync();
                     result = Convert.ToInt32(await command.ExecuteScalarAsync());
-                    _logger.Warning($"New report created - {request.Name} with ID: {result}");
+                    _logger.Warning($"CreateReport: New report created - {request.Name} with ID: {result}");
                     await SaveChangesAsync();
                     await Database.CloseConnectionAsync();
                 }
             }
             catch (Exception err)
             {
-                _logger.Error($"New report creation failed in SP - {err}");
+                _logger.Error($"CreateReport: New report creation failed in SP - {err}");
             }
             return result;
         }

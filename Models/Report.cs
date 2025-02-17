@@ -15,7 +15,7 @@ namespace IMC_CC_App.Models
 
         public DateTimeOffset Modified { get; set; }
 
-        public required StatusCategory Status { get; set; } = StatusCategory.PENDING;
+        public required string Status { get; set; } = "PENDING";
 
         public required int CardId { get; set; }
     }
@@ -35,13 +35,11 @@ namespace IMC_CC_App.Models
         public string? memo { get; set; }
     }
 
-    public enum StatusCategory
+    public class UpdateReport_SP
     {
-        PENDING = 0,
-        SUBMITTED = 1,
-        APPROVED = 2,
-        RETURNED = 3,
-        DELETED = 4
+        public required int id { get; set; }
+        public required string name { get; set; }
+        public required string status { get; set; }
+        public string? memo { get; set; }
     }
-
 }

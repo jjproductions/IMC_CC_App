@@ -12,17 +12,18 @@ namespace IMC_CC_App.Security
         //private readonly IConfiguration _config;
         public static string GenerateToken(User? userInfo, string? secretKey, int tokenExpiration)
         {
-            if (secretKey == null) throw new UnauthorizedAccessException("site is down: 101"); 
-            
+            if (secretKey == null) throw new UnauthorizedAccessException("site is down: 101");
+
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)); //"5014c26ef532i39e8b648fbf8555f0e7c93e1a7cde9e12192543aa1720947331"));
 
-           
+
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Email, userInfo?.Email),
-                new Claim(ClaimTypes.Role, userInfo.RoleName)
+                new(JwtRegisteredClaimNames.Email, userInfo?.Email ?? string.Empty),
+                new Claim(ClaimTypes.Role, userInfo?.RoleName ?? string.Empty),
+                new Claim("CardNumber", userInfo?.Card?.ToString() ?? string.Empty),
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -34,7 +35,7 @@ namespace IMC_CC_App.Security
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = tokenHandler.WriteToken(token);
-            
+
             return jwtToken;
         }
     }

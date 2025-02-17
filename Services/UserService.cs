@@ -28,7 +28,7 @@ namespace IMC_CC_App.Services
             List<AuthorizedUsersDB>? userResponse = email != null ?
                 await _context.GetAuthUserInfo(email).ConfigureAwait(false) :
                 await _context.GetAuthUserInfo().ConfigureAwait(false);
-            
+
             foreach (AuthorizedUsersDB user in userResponse)
             {
                 User? tempUser = new User
@@ -36,7 +36,7 @@ namespace IMC_CC_App.Services
                     Active = true,
                     Email = user.email,
                     Name = user.name,
-                    Card = null,
+                    Card = user.card_number,
                     CardId = null,
                     RoleName = user.role_name,
                     RoleId = user.role_id,
@@ -53,8 +53,8 @@ namespace IMC_CC_App.Services
         public async Task<UserDTO> GetUserAsync(string? email = null)
         {
             UserDTO response = new();
-            
-            List<UserDataDB>? results = email != null ? 
+
+            List<UserDataDB>? results = email != null ?
                 await _context.GetUserInfo(email).ConfigureAwait(false) :
                 await _context.GetUserInfo().ConfigureAwait(false);
 

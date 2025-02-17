@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.ComponentModel.DataAnnotations;
 using IMC_CC_App.DTO;
+using IMC_CC_App.Models;
 
 namespace IMC_CC_App.DTO
 {
@@ -101,6 +102,7 @@ namespace IMC_CC_App.DTO
         public required string ReportName { get; set; }
         public int? ReportId { get; set; }
         public int[]? ItemsToDelete { get; set; }
+        public StatusCategory? Status { get; set; } = StatusCategory.PENDING;
         public required List<StatementUpdateRequest> Statements { get; set; }
     }
 

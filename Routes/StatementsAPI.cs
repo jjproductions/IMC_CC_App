@@ -46,10 +46,10 @@ namespace IMC_CC_App.Routes
                 ClaimsPrincipal principal) => GetOpenStatements(rptId, principal))
                 .RequireAuthorization();
 
-            groupBuilder.MapPost("/", (
-                [FromBody] StatementUpdateRequestDTO request,
-                ClaimsPrincipal principal) => UpdateStatements(request, principal))
-                .RequireAuthorization();
+            // groupBuilder.MapPost("/", (
+            //     [FromBody] StatementUpdateRequestDTO request,
+            //     ClaimsPrincipal principal) => UpdateStatements(request, principal))
+            //     .RequireAuthorization();
 
             groupBuilder.MapPost("/update", (
                 [FromBody] StatementUpdateRequestDTO request,
@@ -107,16 +107,16 @@ namespace IMC_CC_App.Routes
             return db_result;
         }
 
-        protected virtual async Task<int> UpdateStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
-        {
-            var authResult = await _authService.AuthorizeAsync(principal, "User");
-            //_logger.Warning($"UpdateStatements - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
+        // protected virtual async Task<int> UpdateStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
+        // {
+        //     var authResult = await _authService.AuthorizeAsync(principal, "User");
+        //     //_logger.Warning($"UpdateStatements - Auth claim: {principal.Claims?.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value}...{authResult.Succeeded}");
 
-            int response;
-            //Console.WriteLine($"UpdateStatements API: # of items to remove - {JsonSerializer.Serialize(request, _jsonSerializerOptions)} :: {request.ReportId}");
-            response = await _repositoryManager.statementService.UpdateStatementsAsync(request, CancellationToken.None);
-            return response;
-        }
+        //     int response;
+        //     //Console.WriteLine($"UpdateStatements API: # of items to remove - {JsonSerializer.Serialize(request, _jsonSerializerOptions)} :: {request.ReportId}");
+        //     response = await _repositoryManager.statementService.UpdateStatementsAsync(request, CancellationToken.None);
+        //     return response;
+        // }
 
         protected virtual async Task<ExpenseDTO> UpdateReportStatements(StatementUpdateRequestDTO request, ClaimsPrincipal principal)
         {

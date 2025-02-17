@@ -29,17 +29,18 @@ namespace IMC_CC_App.Routes
 
             groupBuilder.MapGet("/", (int id, ClaimsPrincipal principal) => GetReports(id, principal));
 
-
             groupBuilder.MapPost("/delete", (
                 [FromBody] ReportDeleteRequest request, ClaimsPrincipal principal) => DeleteReport(request.ReportId, request.ItemsToDelete, principal));
 
             groupBuilder.MapPost("/", (
                 [FromBody] ReportNewRequest request, ClaimsPrincipal principal) => NewReport(request, principal));
 
+            groupBuilder.MapPost("/update", (
+                [FromBody] ReportRequest request, ClaimsPrincipal principal) => UpdateReport(request, principal));
 
         }
 
-        protected virtual async Task<ReportDTO> GetReports(int id, ClaimsPrincipal principal)
+        protected virtual async Task<ReportDTO?> GetReports(int id, ClaimsPrincipal principal)
         {
             _logger.Warning($"GetReports for {id}");
             var authResult = await _authService.AuthorizeAsync(principal, "User");
@@ -69,13 +70,27 @@ namespace IMC_CC_App.Routes
 
         protected virtual async Task<int> NewReport(ReportNewRequest request, ClaimsPrincipal principal)
         {
-            _logger.Warning($"NewReport for {request.Name}");
+            _logger.Warning($"NewReport for {request.Name} :: status - {request.Status}");
             var authResult = await _authService.AuthorizeAsync(principal, "User");
             int response = await _repositoryManager.reportService.CreateReport(request);
             _logger.Warning($@" 
                 {(response != 0 ?
                     $"successfully created Report: {response}" :
                     $"Failed to create report for report ID: {request.Name}")}
+            ");
+
+            return response;
+        }
+
+        protected virtual async Task<ReportUpdateResponse?> UpdateReport(ReportRequest request, ClaimsPrincipal principal)
+        {
+            _logger.Warning($"ReportSvc:UpdateReport: Report Id {request.ReportId} :: status - {request.Status}");
+            var authResult = await _authService.AuthorizeAsync(principal, "User");
+            ReportUpdateResponse? response = await _repositoryManager.reportService.UpdateReportStatements(request);
+            _logger.Warning($@" 
+                {(response != null ?
+                    $"ReportSvc:UpdateReport: successfully updated Report: {response.Id}" :
+                    $"ReportSvc:UpdateReport: Failed to update report for report ID: {request.ReportId}")}
             ");
 
             return response;

@@ -41,4 +41,14 @@
         OPEN,
         NOTOPEN
     }
+
+    public enum StatusCategory
+    {
+        PENDING = 0,
+        SUBMITTED = 1,
+        APPROVED = 2,
+        RETURNED = 3,
+        DELETED = 4,
+        NEW = 5
+    }
 }

@@ -67,6 +67,7 @@ namespace IMC_CC_App.Routes
             {
                 response.access_token = TokenGenerator.GenerateToken(userInfo?.Users?[0], _config.GetSection("AuthKey")?.Value?.ToString(), expiration);
                 response.role = userInfo?.Users?[0].RoleName;
+                response.card_number = userInfo?.Users?[0].Card;
             }
             return response;
 
@@ -121,6 +122,7 @@ namespace IMC_CC_App.Routes
         {
             public string? access_token { get; set; }
             public string? role { get; set; }
+            public int? card_number { get; set; }
         }
     }
 }

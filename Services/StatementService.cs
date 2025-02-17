@@ -72,37 +72,37 @@ namespace IMC_CC_App.Services
             return await _context.GetReportStatements(rptId);
         }
 
-        public async Task<int> UpdateStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken)
-        {
-            bool result = false;
-            int reportId = -1;
-            int response;
-            _logger.Warning($"StatementsService:UpdateStatementsAsync - report id: {statements.ReportId}");
-            Console.WriteLine($"StatementsService:UpdateStatementsAsync - report id: {statements.ReportId}");
-            if (statements.ReportId != null)
-            {
-                reportId = (int)statements.ReportId;
-                result = true;
-            }
-            else
-            {
-                //create new Rpt, get new RptID and set it to reportId
-                int newReportId = await _context.CreateReport(statements.CardNumber, statements.ReportName, statements.ReportMemo);
-                if (newReportId > 0)
-                {
-                    reportId = newReportId;
-                    result = true;
-                    response = newReportId;
-                }
-            }
+        // public async Task<int> UpdateStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken)
+        // {
+        //     bool result = false;
+        //     int reportId = -1;
+        //     int response;
+        //     _logger.Warning($"StatementsService:UpdateStatementsAsync - report id: {statements.ReportId}");
+        //     Console.WriteLine($"StatementsService:UpdateStatementsAsync - report id: {statements.ReportId}");
+        //     if (statements.ReportId != null)
+        //     {
+        //         reportId = (int)statements.ReportId;
+        //         result = true;
+        //     }
+        //     else
+        //     {
+        //         //create new Rpt, get new RptID and set it to reportId
+        //         int newReportId = await _context.CreateReport(statements.CardNumber, statements.ReportName, statements.ReportMemo);
+        //         if (newReportId > 0)
+        //         {
+        //             reportId = newReportId;
+        //             result = true;
+        //             response = newReportId;
+        //         }
+        //     }
 
-            if (result)
-                result = await _context.UpdateStatements(reportId, statements);
+        //     if (result)
+        //         result = await _context.UpdateStatements(reportId, statements);
 
-            response = result ? reportId : -1;
+        //     response = result ? reportId : -1;
 
-            return response;
-        }
+        //     return response;
+        // }
 
         public async Task<ExpenseDTO> UpdateReportStatementsAsync(StatementUpdateRequestDTO statements, CancellationToken cancellationToken)
         {
@@ -121,16 +121,24 @@ namespace IMC_CC_App.Services
                     reportId = (int)statements.ReportId;
                     result = true;
                 }
-                else
-                {
-                    //create new Rpt, get new RptID and set it to reportId
-                    int newReportId = await _context.CreateReport(statements.CardNumber, statements.ReportName, statements.ReportMemo);
-                    if (newReportId > 0)
-                    {
-                        reportId = newReportId;
-                        result = true;
-                    }
-                }
+                // else
+                // {
+                //     //create new Rpt, get new RptID and set it to reportId
+                //     ReportNewRequest request = new()
+                //     {
+                //         CardNumber = statements.CardNumber,
+                //         Name = statements.ReportName,
+                //         Memo = statements.ReportMemo,
+                //         Status = statements.Status
+                //     };
+
+                //     int newReportId = await _context.CreateReport(request);
+                //     if (newReportId > 0)
+                //     {
+                //         reportId = newReportId;
+                //         result = true;
+                //     }
+                // }
 
                 if (result)
                     response_SP = await _context.UpdateReportStatements(reportId, statements);

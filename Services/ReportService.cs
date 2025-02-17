@@ -2,6 +2,7 @@ using IMC_CC_App.Data;
 using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
 using IMC_CC_App.Models;
+using Microsoft.AspNetCore.Http.Timeouts;
 using ILogger = Serilog.ILogger;
 
 namespace IMC_CC_App.Services
@@ -65,7 +66,20 @@ namespace IMC_CC_App.Services
 
         public async Task<int> CreateReport(ReportNewRequest request)
         {
-            return await _context.CreateNewReport(request);
+            return await _context.CreateReport(request);
+        }
+
+        public async Task<ReportUpdateResponse> UpdateReportStatements(ReportRequest request)
+        {
+            string statusString = request.Status.ToString();
+            UpdateReport_SP response = await _context.UpdateReport(request.ReportId, request.Memo, statusString);
+            return new ReportUpdateResponse
+            {
+                Id = response.id,
+                Name = response.name,
+                Status = (StatusCategory)Enum.Parse(typeof(StatusCategory), response.status, true),
+                Memo = response.memo
+            };
         }
     }
 }

@@ -44,5 +44,24 @@ namespace IMC_CC_App.DTO
         public required int CardNumber { get; set; }
 
         public string? Memo { get; set; }
+
+        public StatusCategory Status { get; set; } = StatusCategory.PENDING;
+    }
+
+    public class ReportUpdateResponse
+    {
+        public required int Id { get; set; }
+        public required string Name { get; set; }
+        public required StatusCategory Status { get; set; }
+        public string? Memo { get; set; }
+    }
+
+    public class ReportRequest
+    {
+        public required int ReportId { get; set; }
+
+        public required StatusCategory Status { get; set; }
+
+        public string? Memo { get; set; }
     }
 }

@@ -33,7 +33,7 @@ namespace IMC_CC_App.Models
 
     }
 
-    
+
     public class AuthorizedUsersDB
     {
         public required string name { get; set; }
@@ -46,7 +46,9 @@ namespace IMC_CC_App.Models
 
         public required int role_id { get; set; }
 
-        public required int id {get; set; }
+        public required int id { get; set; }
+
+        public int? card_number { get; set; }
     }
 
     public class UserDataDB
@@ -61,10 +63,10 @@ namespace IMC_CC_App.Models
 
         public required int role_id { get; set; }
 
-        public required int card_number {get; set;}
+        public required int card_number { get; set; }
 
-        public required int card_id {get; set;}
+        public required int card_id { get; set; }
 
-        public required int id {get; set; }
+        public required int id { get; set; }
     }
 }
