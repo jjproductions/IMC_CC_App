@@ -295,5 +295,40 @@ namespace IMC_CC_App.Data
             }
             return result;
         }
+
+        public async Task<List<Report_SP>> GetReports()
+        {
+            // List<Report_SP> response = new();
+            try
+            {
+                var sp_response = await ReportDB
+                    .FromSqlRaw("SELECT * FROM get_admin_reports()")
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                if (sp_response?.Count > 0)
+                {
+                    return sp_response;
+                    // foreach (var item in sp_response)
+                    // {
+                    //     response.Add(new ReportUpdateResponse
+                    //     {
+                    //         Id = item.id,
+                    //         Name = item.name,
+                    //         Status = (StatusCategory)Enum.Parse(typeof(StatusCategory), item.status, true),
+                    //         Memo = item.memo,
+                    //         Created = item.created,
+                    //         Modified = item.modified,
+                    //         CardNumber = item.card_number
+                    //     });
+                    // }
+                }
+            }
+            catch (Exception err)
+            {
+                _logger.Error($"GetReports SP - {err}");
+            }
+            return null;
+        }
     }
 }

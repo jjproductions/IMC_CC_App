@@ -11,5 +11,7 @@ namespace IMC_CC_App.Interfaces
         Task<int> CreateReport(ReportNewRequest request);
 
         Task<ReportUpdateResponse> UpdateReportStatements(ReportRequest request);
+
+        Task<List<ReportUpdateResponse>> GetAdminReports();
     }
 }

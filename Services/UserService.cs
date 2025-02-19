@@ -29,6 +29,8 @@ namespace IMC_CC_App.Services
                 await _context.GetAuthUserInfo(email).ConfigureAwait(false) :
                 await _context.GetAuthUserInfo().ConfigureAwait(false);
 
+            _logger.Warning($"GetAuthUserAsync returned: card - {userResponse[0].card_number} :: email - {userResponse[0].email}");
+
             foreach (AuthorizedUsersDB user in userResponse)
             {
                 User? tempUser = new User

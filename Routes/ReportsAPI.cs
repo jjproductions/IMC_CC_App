@@ -38,6 +38,9 @@ namespace IMC_CC_App.Routes
             groupBuilder.MapPost("/update", (
                 [FromBody] ReportRequest request, ClaimsPrincipal principal) => UpdateReport(request, principal));
 
+            groupBuilder.MapGet("/admin", (ClaimsPrincipal principal) => GetAdminReports(principal));
+
+
         }
 
         protected virtual async Task<ReportDTO?> GetReports(int id, ClaimsPrincipal principal)
@@ -91,6 +94,20 @@ namespace IMC_CC_App.Routes
                 {(response != null ?
                     $"ReportSvc:UpdateReport: successfully updated Report: {response.Id}" :
                     $"ReportSvc:UpdateReport: Failed to update report for report ID: {request.ReportId}")}
+            ");
+
+            return response;
+        }
+
+        protected virtual async Task<List<ReportUpdateResponse>> GetAdminReports(ClaimsPrincipal principal)
+        {
+            _logger.Warning($"GetOpenReports");
+            var authResult = await _authService.AuthorizeAsync(principal, "Admin");
+            List<ReportUpdateResponse> response = await _repositoryManager.reportService.GetAdminReports();
+            _logger.Warning($@" 
+                {(response?.Count == null ?
+                    $"returning GetOpenReports: Status:" :
+                    $"No Reports for report ID")}
             ");
 
             return response;

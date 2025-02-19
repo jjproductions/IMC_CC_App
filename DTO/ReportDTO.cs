@@ -54,6 +54,9 @@ namespace IMC_CC_App.DTO
         public required string Name { get; set; }
         public required StatusCategory Status { get; set; }
         public string? Memo { get; set; }
+        public DateTimeOffset? Modified { get; set; }
+        public DateTimeOffset? Created { get; set; }
+        public int? CardNumber { get; set; }
     }
 
     public class ReportRequest

@@ -33,6 +33,8 @@ namespace IMC_CC_App.Models
         public DateTimeOffset modified { get; set; }
 
         public string? memo { get; set; }
+
+        public int? card_number { get; set; }
     }
 
     public class UpdateReport_SP

@@ -81,5 +81,28 @@ namespace IMC_CC_App.Services
                 Memo = response.memo
             };
         }
+
+        public async Task<List<ReportUpdateResponse>> GetAdminReports()
+        {
+            List<ReportUpdateResponse> response = [];
+            var sp_response = await _context.GetReports().ConfigureAwait(false);
+            if (sp_response?.Count > 0)
+            {
+                foreach (var item in sp_response)
+                {
+                    response.Add(new ReportUpdateResponse
+                    {
+                        Id = item.id,
+                        Name = item.name,
+                        Status = (StatusCategory)Enum.Parse(typeof(StatusCategory), item.status, true),
+                        Memo = item.memo,
+                        Created = item.created,
+                        Modified = item.modified,
+                        CardNumber = item.card_number
+                    });
+                }
+            }
+            return response;
+        }
     }
 }
