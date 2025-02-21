@@ -38,8 +38,6 @@ namespace IMC_CC_App.Models
 
         public int CreatedBy { get; set; } = 0;
 
-        public int? report_id { get; set; }
-
         //public string? UserName { get; set; } = null;
 
         //[Required]

@@ -35,7 +35,7 @@ namespace IMC_CC_App.Routes
         {
             var authResult = await _authService.AuthorizeAsync(principal, "Admin");
             var response = await _repositoryManager.expenseService.PostExpenseAsync(request);
-            return Results.Ok();
+            return response.StatusCode == 200 ? Results.Ok() : Results.Problem(response.StatusMessage);
         }
 
     }
