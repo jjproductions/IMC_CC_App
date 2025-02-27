@@ -41,7 +41,7 @@ namespace IMC_CC_App.Repositories
         {
             get
             {
-                _statementService ??= new StatementService(_context, _logger);
+                _statementService ??= new StatementService(_context, _logger, _configuration);
                 return _statementService;
             }
         }
@@ -50,7 +50,7 @@ namespace IMC_CC_App.Repositories
         {
             get
             {
-                _expenseService ??= new ExpenseService(_context, _logger);
+                _expenseService ??= new ExpenseService(_context, _logger, _configuration);
                 return _expenseService;
             }
         }
@@ -69,7 +69,7 @@ namespace IMC_CC_App.Repositories
         {
             get
             {
-                _reportService ??= new ReportService(_context, _logger);
+                _reportService ??= new ReportService(_context, _logger, _configuration);
                 return _reportService;
             }
         }

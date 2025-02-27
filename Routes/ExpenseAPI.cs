@@ -31,11 +31,11 @@ namespace IMC_CC_App.Routes
                 .RequireAuthorization();
         }
 
-        protected virtual async Task<IResult> Post(List<ExpenseRequest> request, ClaimsPrincipal principal)
+        protected virtual async Task<CommonDTO> Post(List<ExpenseRequest> request, ClaimsPrincipal principal)
         {
             var authResult = await _authService.AuthorizeAsync(principal, "Admin");
             var response = await _repositoryManager.expenseService.PostExpenseAsync(request);
-            return response.StatusCode == 200 ? Results.Ok() : Results.Problem(response.StatusMessage);
+            return response;
         }
 
     }

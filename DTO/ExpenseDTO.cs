@@ -104,6 +104,7 @@ namespace IMC_CC_App.DTO
         public int[]? ItemsToDelete { get; set; }
         public StatusCategory? Status { get; set; } = StatusCategory.PENDING;
         public required List<StatementUpdateRequest> Statements { get; set; }
+        public required bool SendNotification { get; set; }
     }
 
     // Used for updating statements within a report

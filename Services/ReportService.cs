@@ -2,6 +2,7 @@ using IMC_CC_App.Data;
 using IMC_CC_App.DTO;
 using IMC_CC_App.Interfaces;
 using IMC_CC_App.Models;
+using IMC_CC_App.Utility;
 using Microsoft.AspNetCore.Http.Timeouts;
 using ILogger = Serilog.ILogger;
 
@@ -11,11 +12,13 @@ namespace IMC_CC_App.Services
     {
         private readonly DbContext_CC _context;
         private readonly ILogger _logger;
+        private readonly IConfiguration _configuration;
 
-        public ReportService(DbContext_CC context, ILogger logger)
+        public ReportService(DbContext_CC context, ILogger logger, IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<ReportDTO> GetOpenReports(int cardNumber, StatementStatus status = StatementStatus.OPEN)
@@ -71,15 +74,38 @@ namespace IMC_CC_App.Services
 
         public async Task<ReportUpdateResponse> UpdateReportStatements(ReportRequest request)
         {
-            string statusString = request.Status.ToString();
-            UpdateReport_SP response = await _context.UpdateReport(request.ReportId, request.Memo, statusString);
-            return new ReportUpdateResponse
+            try
             {
-                Id = response.id,
-                Name = response.name,
-                Status = (StatusCategory)Enum.Parse(typeof(StatusCategory), response.status, true),
-                Memo = response.memo
-            };
+
+                string statusString = request.Status.ToString();
+                UpdateReport_SP response = await _context.UpdateReport(request.ReportId, request.Memo, statusString);
+                if ((response?.name != null) && (response?.name != "") && (response?.cardid != null))
+                {
+                    // Send notification to staff
+                    List<int> cardIds = response.cardid.HasValue ? new List<int> { response.cardid.Value } : new List<int>(); // Review this ***
+                    NotiificationUtilityRequest utilityRequest = new NotiificationUtilityRequest
+                    {
+                        cardIds = cardIds,
+                        sendToAdmin = false,
+                        status = request.Status
+                    };
+                    var temp = await new Notifications(_context, _logger, _configuration).SendNotificationAsync(utilityRequest);
+                    if (!temp)
+                        _logger.Error("Successfully updated report but notifications failed");
+                }
+                return new ReportUpdateResponse
+                {
+                    Id = response != null ? response.id : 0,
+                    Name = response != null ? response.name : "",
+                    Status = response != null ? (StatusCategory)Enum.Parse(typeof(StatusCategory), response.status, true) : request.Status,
+                    Memo = response != null ? response.memo : request.Memo
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"ReportService-UpdateReportStatements: {ex.Message}");
+                throw new Exception($"ReportService-UpdateReportStatements: {ex.Message}");
+            }
         }
 
         public async Task<List<ReportUpdateResponse>> GetAdminReports()

@@ -30,6 +30,7 @@ namespace IMC_CC_App.Data
             modelBuilder.Entity<Report_SP>().HasNoKey();
             modelBuilder.Entity<ReportStatments_SP>().HasNoKey();
             modelBuilder.Entity<UpdateReport_SP>().HasNoKey();
+            modelBuilder.Entity<UserInfo_SP>().HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -41,6 +42,7 @@ namespace IMC_CC_App.Data
         public DbSet<Report_SP> ReportDB => Set<Report_SP>();
         public DbSet<ReportStatments_SP> ReportStatementsDB => Set<ReportStatments_SP>();
         public DbSet<UpdateReport_SP> ReportUpdateResponse => Set<UpdateReport_SP>();
+        public DbSet<UserInfo_SP> UserInfo => Set<UserInfo_SP>();
 
         //public DbSet<int> UpdateStDB => Set<int>();
 
@@ -61,6 +63,13 @@ namespace IMC_CC_App.Data
                     .ToListAsync()
                 );
             return response;
+        }
+
+        public async Task<List<UserInfo_SP>> GetUserInfoByCard(List<int> cardIds)
+        {
+            return await UserInfo
+                .FromSqlRaw("SELECT * FROM get_users_by_card('" + string.Join(',', cardIds) + "')")
+                .ToListAsync();
         }
 
         // Get info from all active users
@@ -116,6 +125,7 @@ namespace IMC_CC_App.Data
                 .FromSqlInterpolated($"SELECT * FROM get_reports_by_card_open({cardNumber})").AsNoTracking().ToListAsync();
         }
 
+        // Update statements within a report; called by staff
         public async Task<List<ReportStatments_SP>> UpdateReportStatements(int rptId, StatementUpdateRequestDTO request)
         {
             List<ReportStatments_SP> response = new();
@@ -184,6 +194,7 @@ namespace IMC_CC_App.Data
             return true;
         }
 
+        // Update report status and memo; called from Admin Report View
         public async Task<UpdateReport_SP> UpdateReport(int rptId, string? reportMemo, string status)
         {
             try

@@ -5,6 +5,7 @@ using IMC_CC_App.Interfaces;
 using ILogger = Serilog.ILogger;
 using Microsoft.EntityFrameworkCore;
 using Azure.Core;
+using IMC_CC_App.Utility;
 
 namespace IMC_CC_App.Services
 {
@@ -12,11 +13,13 @@ namespace IMC_CC_App.Services
     {
         private readonly DbContext_CC _context;
         private ILogger _logger;
+        private readonly IConfiguration _configuration;
 
-        public StatementService(DbContext_CC context, ILogger logger)
+        public StatementService(DbContext_CC context, ILogger logger, IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<ExpenseDTO> GetStatementsAsync(StatementRequest request, CancellationToken cancellationToken)
@@ -110,6 +113,7 @@ namespace IMC_CC_App.Services
             int reportId = -1;
             List<ReportStatments_SP> response_SP = [];
             ExpenseDTO response = new();
+            response.Status = Status.SetStatus(0, 500, "Error updating report");
             Expense? expense = null;
             _logger.Warning($"StatementsService:UpdateReportStatementsAsync - report id: {statements.ReportId}");
             Console.WriteLine($"StatementsService:UpdateReportStatementsAsync - report id: {statements.ReportId}");
@@ -121,24 +125,6 @@ namespace IMC_CC_App.Services
                     reportId = (int)statements.ReportId;
                     result = true;
                 }
-                // else
-                // {
-                //     //create new Rpt, get new RptID and set it to reportId
-                //     ReportNewRequest request = new()
-                //     {
-                //         CardNumber = statements.CardNumber,
-                //         Name = statements.ReportName,
-                //         Memo = statements.ReportMemo,
-                //         Status = statements.Status
-                //     };
-
-                //     int newReportId = await _context.CreateReport(request);
-                //     if (newReportId > 0)
-                //     {
-                //         reportId = newReportId;
-                //         result = true;
-                //     }
-                // }
 
                 if (result)
                     response_SP = await _context.UpdateReportStatements(reportId, statements);
@@ -163,6 +149,23 @@ namespace IMC_CC_App.Services
                         };
                         _logger.Warning($"UpdateReportStatementsAsync - Report {expense.ReportID} Expense ID: {expense.Id} :: Receipt URL: {expense.ReceiptUrl}");
                         response.Expenses.Add(expense);
+                        response.Status = Status.SetStatus(response.Expenses.Count, 200, "Success");
+                    }
+                    // Check if notifications need to be sent
+                    if (statements.SendNotification)
+                    {
+                        List<int> cardIds = [statements.CardNumber]; // Review this ***
+                        NotiificationUtilityRequest utilityRequest = new NotiificationUtilityRequest
+                        {
+                            cardIds = [statements.CardNumber],
+                            sendToAdmin = true,
+                            status = statements.Status
+                        };
+                        var temp = await new Notifications(_context, _logger, _configuration).SendNotificationAsync(utilityRequest);
+                        if (temp)
+                            response.Status.StatusMessage = "Successfully updated report and notifications sent";
+                        else
+                            response.Status.StatusMessage = "Successfully updated report but notifications failed";
                     }
                 }
             }
@@ -170,6 +173,7 @@ namespace IMC_CC_App.Services
             {
                 _logger.Error($"UpdateReportStatementsAsync: {ex.Message}");
                 response.Expenses = [];
+                response.Status = Status.SetStatus(0, 500, "Error updating report");
             }
 
             return response;

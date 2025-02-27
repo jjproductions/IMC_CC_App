@@ -14,14 +14,16 @@ namespace IMC_CC_App.Services
     {
         private readonly ILogger _logger;
         private readonly DbContext_CC _context;
+        private readonly IConfiguration _configuration;
         // private static Dictionary<string, int> _category;
         // private static Dictionary<string, int> _type;
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
-        public ExpenseService(DbContext_CC context, ILogger logger)
+        public ExpenseService(DbContext_CC context, ILogger logger, IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public Task<ExpenseDTO> GetExpensesAsync(int id = 0)
@@ -37,9 +39,16 @@ namespace IMC_CC_App.Services
             ConsolidatedInfo consolidatedInfo = await DataOb.GetConsolidatedInfo(_context);
             //_logger.Warning("ExpenseService");
             Dictionary<int, string> errorCollection = new Dictionary<int, string>();
+            List<int> cardIds = [];
             string errormsg = "";
             int count = 1;
             int count_success = 0;
+            NotiificationUtilityRequest utilityRequest = new NotiificationUtilityRequest
+            {
+                cardIds = new List<int>(),
+                sendToAdmin = false,
+                status = StatusCategory.NEW
+            };
 
             //_logger.Warning("start loop");
             try
@@ -57,9 +66,15 @@ namespace IMC_CC_App.Services
                         TransactionDate = item.TransactionDate.ToUniversalTime(),
                     };
 
-
+                    //_logger.Warning($"Card Number: {item.CardNumber}");
                     if (consolidatedInfo.creditCard.ContainsValue(item.CardNumber))
+                    {
                         tranItem.CardId = consolidatedInfo.creditCard.First(t => t.Value == item.CardNumber).Key;
+                        _logger.Warning($"tranItem ID: {tranItem.CardId}");
+                        _logger.Warning($"cards collection:` {JsonSerializer.Serialize(cardIds, _jsonSerializerOptions)}");
+                        if (!cardIds.Contains(item.CardNumber))
+                            cardIds.Add(item.CardNumber);
+                    }
                     else
                         errormsg = $"{errormsg} - card number: {item.CardNumber} does not exist;";
 
@@ -86,7 +101,7 @@ namespace IMC_CC_App.Services
                     {
                         await _context.Set<Transaction>().AddAsync(tranItem);
                         count_success++;
-                        _logger.Warning(tranItem.ToString());
+                        _logger.Warning(tranItem?.ToString() ?? "tranItem is null");
                     }
                     else
                     {
@@ -97,9 +112,12 @@ namespace IMC_CC_App.Services
                     count++;
                 }
 
-                //_logger.Warning("finish loop");
                 await _context.SaveChangesAsync();
                 response = Status.SetStatus(request.Count, 200, $"{count_success} entries uploaded successfully");
+                // Notify staff of newly updated expenses
+                _logger.Warning($"Successfully uploaded {count_success} expenses.  Sending notifications to {cardIds.Count} staff.");
+                utilityRequest.cardIds = cardIds;
+                var notifications = new Notifications(_context, _logger, _configuration).SendNotificationAsync(utilityRequest);
             }
             catch (Exception ex)
             {
@@ -119,8 +137,6 @@ namespace IMC_CC_App.Services
 
             return response;
         }
-
-
 
     }
 }

@@ -69,4 +69,15 @@ namespace IMC_CC_App.Models
 
         public required int id { get; set; }
     }
+
+    public class UserInfo_SP
+    {
+        public required string name { get; set; }
+
+        public required string email { get; set; }
+
+        public required int card_number { get; set; }
+    }
+
+
 }

@@ -87,15 +87,28 @@ namespace IMC_CC_App.Routes
 
         protected virtual async Task<ReportUpdateResponse?> UpdateReport(ReportRequest request, ClaimsPrincipal principal)
         {
-            _logger.Warning($"ReportSvc:UpdateReport: Report Id {request.ReportId} :: status - {request.Status}");
-            var authResult = await _authService.AuthorizeAsync(principal, "User");
-            ReportUpdateResponse? response = await _repositoryManager.reportService.UpdateReportStatements(request);
-            _logger.Warning($@" 
-                {(response != null ?
-                    $"ReportSvc:UpdateReport: successfully updated Report: {response.Id}" :
-                    $"ReportSvc:UpdateReport: Failed to update report for report ID: {request.ReportId}")}
-            ");
+            ReportUpdateResponse? response = new ReportUpdateResponse
+            {
+                Id = -1,
+                Status = StatusCategory.PENDING,
+                Name = "Error"
+            };
+            try
+            {
 
+                _logger.Warning($"ReportSvc:UpdateReport: Report Id {request.ReportId} :: status - {request.Status}");
+                var authResult = await _authService.AuthorizeAsync(principal, "User");
+                response = await _repositoryManager.reportService.UpdateReportStatements(request);
+                _logger.Warning($@" 
+                {(response != null ?
+                        $"ReportSvc:UpdateReport: successfully updated Report: {response.Id}" :
+                        $"ReportSvc:UpdateReport: Failed to update report for report ID: {request.ReportId}")}
+            ");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"ReportSvc:UpdateReport: Failed to update report for report ID: {request.ReportId} :: {ex.Message}");
+            }
             return response;
         }
 
